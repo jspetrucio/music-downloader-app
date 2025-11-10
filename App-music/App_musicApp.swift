@@ -2,16 +2,22 @@
 //  App_musicApp.swift
 //  App-music
 //
-//  Created by josdasil on 11/8/25.
+//  Music Downloader - Main app entry point
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct App_musicApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
         }
+        .modelContainer(for: [
+            DownloadedSong.self,
+            Playlist.self,
+            DownloadHistory.self
+        ])
     }
 }

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Playlists Tab - Music Downloader</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .playlist-card {
+            background: linear-gradient(135deg, #BF5AF2 0%, #FF375F 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-height: 100px;
+        }
+
+        .playlist-card:active {
+            transform: scale(0.98);
+        }
+
+        .playlist-thumbnails {
+            width: 64px;
+            height: 64px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .playlist-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .playlist-info {
+            flex: 1;
+        }
+
+        .playlist-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .playlist-count {
+            font-size: 15px;
+            opacity: 0.8;
+        }
+
+        .playlist-arrow {
+            font-size: 20px;
+            opacity: 0.6;
+        }
+
+        .gradient-purple { background: linear-gradient(135deg, #BF5AF2 0%, #FF375F 100%); }
+        .gradient-blue { background: linear-gradient(135deg, #0A84FF 0%, #00D4FF 100%); }
+        .gradient-orange { background: linear-gradient(135deg, #FF9500 0%, #FF3B30 100%); }
+        .gradient-green { background: linear-gradient(135deg, #32D74B 0%, #30D158 100%); }
+
+        .create-btn {
+            position: fixed;
+            bottom: 160px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background: #0A84FF;
+            border: none;
+            border-radius: 50%;
+            font-size: 32px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(10, 132, 255, 0.4);
+            transition: all 0.2s;
+        }
+
+        .create-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .create-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+                <span>📶</span>
+                <span>🔋</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="nav-header">
+                <h1>Playlists</h1>
+                <button class="icon-btn">➕</button>
+            </div>
+
+            <div class="playlist-card gradient-purple">
+                <div class="playlist-thumbnails">
+                    <div class="playlist-thumb">⭐️</div>
+                    <div class="playlist-thumb">⭐️</div>
+                    <div class="playlist-thumb">⭐️</div>
+                    <div class="playlist-thumb">⭐️</div>
+                </div>
+                <div class="playlist-info">
+                    <div class="playlist-name">Minhas Favoritas</div>
+                    <div class="playlist-count">487 músicas</div>
+                </div>
+                <div class="playlist-arrow">▶</div>
+            </div>
+
+            <div class="section-header" style="margin-top: 32px;">
+                <div class="section-title">Suas Playlists</div>
+            </div>
+
+            <div class="playlist-card gradient-blue">
+                <div class="playlist-thumbnails">
+                    <div class="playlist-thumb">🎵</div>
+                    <div class="playlist-thumb">🎵</div>
+                    <div class="playlist-thumb">🎵</div>
+                    <div class="playlist-thumb">🎵</div>
+                </div>
+                <div class="playlist-info">
+                    <div class="playlist-name">Workout Mix</div>
+                    <div class="playlist-count">23 músicas</div>
+                </div>
+                <div class="playlist-arrow">▶</div>
+            </div>
+
+            <div class="playlist-card gradient-orange">
+                <div class="playlist-thumbnails">
+                    <div class="playlist-thumb">🎵</div>
+                    <div class="playlist-thumb">🎵</div>
+                    <div class="playlist-thumb">🎵</div>
+                    <div class="playlist-thumb">🎵</div>
+                </div>
+                <div class="playlist-info">
+                    <div class="playlist-name">Chill Vibes</div>
+                    <div class="playlist-count">45 músicas</div>
+                </div>
+                <div class="playlist-arrow">▶</div>
+            </div>
+
+            <div class="playlist-card gradient-green">
+                <div class="playlist-thumbnails">
+                    <div class="playlist-thumb">🎵</div>
+                    <div class="playlist-thumb">🎵</div>
+                    <div class="playlist-thumb">🎵</div>
+                    <div class="playlist-thumb">🎵</div>
+                </div>
+                <div class="playlist-info">
+                    <div class="playlist-name">Road Trip</div>
+                    <div class="playlist-count">12 músicas</div>
+                </div>
+                <div class="playlist-arrow">▶</div>
+            </div>
+        </div>
+
+        <div class="mini-player" onclick="window.location.href='player.html'">
+            <div class="mini-player-art">🎵</div>
+            <div class="mini-player-info">
+                <div class="mini-player-title">Bohemian Rhapsody</div>
+                <div class="mini-player-artist">Queen</div>
+            </div>
+            <button class="mini-player-btn">⏸</button>
+            <button class="mini-player-btn">⏭</button>
+        </div>
+
+        <div class="tab-bar">
+            <button class="tab-btn" onclick="window.location.href='download.html'">
+                <span class="tab-icon">⬇️</span>
+                <span class="tab-label">Download</span>
+            </button>
+            <button class="tab-btn" onclick="window.location.href='library.html'">
+                <span class="tab-icon">🎵</span>
+                <span class="tab-label">Library</span>
+            </button>
+            <button class="tab-btn active">
+                <span class="tab-icon">📝</span>
+                <span class="tab-label">Playlists</span>
+            </button>
+        </div>
+
+        <div class="nav-controls">
+            <button onclick="window.location.href='index.html'" class="back-btn">← Voltar aos Mockups</button>
+        </div>
+    </div>
+</body>
+</html>

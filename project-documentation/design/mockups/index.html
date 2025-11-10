@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Downloader - Design Mockups</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #FFFFFF;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 34px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #EBEBF5;
+            opacity: 0.6;
+            margin-bottom: 48px;
+        }
+
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .mockup-card {
+            background: #1C1C1E;
+            border-radius: 16px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .mockup-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .mockup-card h2 {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .mockup-card p {
+            color: #EBEBF5;
+            opacity: 0.6;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .mockup-card .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #0A84FF;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .info-section {
+            background: #1C1C1E;
+            border-radius: 16px;
+            padding: 32px;
+            margin-top: 48px;
+        }
+
+        .info-section h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-section li {
+            padding: 8px 0;
+            color: #EBEBF5;
+            opacity: 0.8;
+        }
+
+        .info-section li::before {
+            content: "✓ ";
+            color: #32D74B;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Music Downloader App</h1>
+        <p class="subtitle">Interactive Design Mockups - Click para visualizar cada tela</p>
+
+        <div class="mockup-grid">
+            <a href="download.html" class="mockup-card">
+                <div class="icon">⬇️</div>
+                <h2>Download Tab</h2>
+                <p>Cola URL do YouTube, visualiza metadados, seleciona formato e baixa música</p>
+                <span class="badge">Tela Principal</span>
+            </a>
+
+            <a href="library.html" class="mockup-card">
+                <div class="icon">🎵</div>
+                <h2>Library Tab</h2>
+                <p>Grid/List view das músicas baixadas, busca, filtros e storage dashboard</p>
+                <span class="badge">Tela Principal</span>
+            </a>
+
+            <a href="playlists.html" class="mockup-card">
+                <div class="icon">📝</div>
+                <h2>Playlists Tab</h2>
+                <p>Cria e gerencia playlists com cards coloridos e drag-to-reorder</p>
+                <span class="badge">Tela Principal</span>
+            </a>
+
+            <a href="player.html" class="mockup-card">
+                <div class="icon">▶️</div>
+                <h2>Music Player</h2>
+                <p>Mini player persistente + Full player expansível com todos os controles</p>
+                <span class="badge">Overlay</span>
+            </a>
+        </div>
+
+        <div class="info-section">
+            <h3>💡 Sobre os Mockups</h3>
+            <ul>
+                <li>Mockups interativos em HTML/CSS baseados nas especificações completas</li>
+                <li>Design moderno com dark mode OLED-friendly (true black)</li>
+                <li>Cores, tipografia e espaçamento exatos do design system</li>
+                <li>Animações e transições com spring physics</li>
+                <li>Navegação funcional entre telas</li>
+                <li>Responsive para diferentes tamanhos de tela</li>
+            </ul>
+        </div>
+
+        <div class="info-section" style="margin-top: 24px;">
+            <h3>🎨 Design System</h3>
+            <ul>
+                <li><strong>Cores:</strong> #000000 (background), #0A84FF (accent blue), #32D74B (success green)</li>
+                <li><strong>Tipografia:</strong> SF Pro Display (iOS native)</li>
+                <li><strong>Espaçamento:</strong> Grid 4pt (8px, 12px, 16px, 24px)</li>
+                <li><strong>Border Radius:</strong> 8px (small), 12px (medium), 16px (large)</li>
+                <li><strong>Sombras:</strong> Sutis para elevação de cards</li>
+            </ul>
+        </div>
+
+        <div class="info-section" style="margin-top: 24px;">
+            <h3>📱 Como Usar</h3>
+            <ul>
+                <li>Clique em cada card acima para abrir a tela correspondente</li>
+                <li>Use os botões de navegação nas telas para voltar</li>
+                <li>Teste interações como busca, filtros, e player controls</li>
+                <li>Redimensione o navegador para ver responsividade</li>
+                <li>Abra no celular para ver em tamanho real (iPhone/Android)</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Full Player - Music Downloader</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 50%, #000000 100%);
+        }
+
+        .phone-frame {
+            background: linear-gradient(180deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 50%, #000000 100%);
+        }
+
+        .player-content {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding-bottom: 48px;
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .dismiss-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dismiss-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .album-art-large {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            margin: 0 auto 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 120px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: pulse 4s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .song-info-large {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .song-title-large {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .song-artist-large {
+            font-size: 20px;
+            color: #EBEBF5;
+            opacity: 0.7;
+        }
+
+        .seek-container {
+            margin-bottom: 32px;
+        }
+
+        .seek-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            margin-bottom: 8px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .seek-progress {
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            width: 45%;
+            position: relative;
+        }
+
+        .seek-thumb {
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            right: -8px;
+            top: -6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .seek-times {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #EBEBF5;
+            opacity: 0.7;
+        }
+
+        .playback-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0.8;
+        }
+
+        .control-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-btn-small {
+            font-size: 32px;
+        }
+
+        .control-btn-medium {
+            font-size: 48px;
+        }
+
+        .control-btn-large {
+            font-size: 64px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn-large:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .volume-icon {
+            font-size: 20px;
+            opacity: 0.7;
+        }
+
+        .volume-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .volume-fill {
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            width: 70%;
+            position: relative;
+        }
+
+        .queue-btn {
+            text-align: right;
+            margin-top: auto;
+        }
+
+        .queue-btn button {
+            background: none;
+            border: none;
+            color: #0A84FF;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+                <span>📶</span>
+                <span>🔋</span>
+            </div>
+        </div>
+
+        <div class="player-content">
+            <div class="player-header">
+                <button class="dismiss-btn" onclick="window.history.back()">⌄</button>
+                <button class="dismiss-btn">•••</button>
+            </div>
+
+            <div class="album-art-large">🎵</div>
+
+            <div class="song-info-large">
+                <div class="song-title-large">Bohemian Rhapsody</div>
+                <div class="song-artist-large">Queen</div>
+            </div>
+
+            <div class="seek-container">
+                <div class="seek-bar">
+                    <div class="seek-progress">
+                        <div class="seek-thumb"></div>
+                    </div>
+                </div>
+                <div class="seek-times">
+                    <span>2:38</span>
+                    <span>5:55</span>
+                </div>
+            </div>
+
+            <div class="playback-controls">
+                <button class="control-btn control-btn-small">🔀</button>
+                <button class="control-btn control-btn-medium">⏮</button>
+                <button class="control-btn control-btn-large">⏸</button>
+                <button class="control-btn control-btn-medium">⏭</button>
+                <button class="control-btn control-btn-small">🔁</button>
+            </div>
+
+            <div class="volume-container">
+                <span class="volume-icon">🔈</span>
+                <div class="volume-bar">
+                    <div class="volume-fill"></div>
+                </div>
+                <span class="volume-icon">🔊</span>
+            </div>
+
+            <div class="queue-btn">
+                <button>
+                    <span>Fila</span>
+                    <span>≡</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="nav-controls">
+            <button onclick="window.location.href='index.html'" class="back-btn">← Voltar aos Mockups</button>
+        </div>
+    </div>
+
+    <script>
+        // Animate album art
+        const albumArt = document.querySelector('.album-art-large');
+        setInterval(() => {
+            albumArt.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                albumArt.style.transform = 'scale(1)';
+            }, 2000);
+        }, 4000);
+    </script>
+</body>
+</html>

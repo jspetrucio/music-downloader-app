@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Downloader - Vevo Style Mockups</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'vevo-black': '#000000',
+                        'vevo-gray': '#1a1a1a',
+                        'accent-blue': '#0A84FF',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+        }
+
+        .phone-screen {
+            width: 390px;
+            height: 844px;
+            background: #000000;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: #000000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .notch {
+            width: 180px;
+            height: 30px;
+            background: #000000;
+            border-radius: 0 0 20px 20px;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+
+        .gradient-circle {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gradient-orange {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .gradient-blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .gradient-green {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        /* Lucide Icons via CDN */
+        .lucide {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .tab-bar-icon {
+            width: 28px;
+            height: 28px;
+        }
+
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 1s ease-out;
+        }
+
+        .animate-slideUp {
+            animation: slideUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center gap-12 p-12">
+
+    <!-- Screen 1: Splash Screen -->
+    <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="status-bar text-white">
+            <span>9:41</span>
+            <div class="flex gap-2">
+                <svg class="lucide" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/></svg>
+                <svg class="lucide" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+            </div>
+        </div>
+
+        <div class="h-full flex flex-col items-center justify-center px-8 animate-fadeIn" style="background: linear-gradient(180deg, #1a1a1a 0%, #000000 100%);">
+            <!-- Concert crowd silhouette suggestion -->
+            <div class="absolute inset-0 opacity-20" style="background: radial-gradient(ellipse at center bottom, #333 0%, transparent 70%);"></div>
+
+            <!-- App Logo -->
+            <div class="relative z-10 text-center">
+                <div class="mb-8">
+                    <svg class="w-24 h-24 mx-auto text-accent-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v12M6 12h12"/>
+                    </svg>
+                </div>
+                <h1 class="text-6xl font-black text-white tracking-tight mb-3">
+                    tuneflow
+                </h1>
+                <p class="text-gray-400 text-sm font-medium tracking-wider uppercase">
+                    Download & Play
+                </p>
+            </div>
+
+            <!-- Bottom text -->
+            <div class="absolute bottom-12 text-center">
+                <p class="text-gray-600 text-xs font-medium">
+                    Powered by YouTube
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Home Screen (Library + Download) -->
+    <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="status-bar text-white">
+            <span>9:41</span>
+            <div class="flex gap-2">
+                <svg class="lucide" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/></svg>
+                <svg class="lucide" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="h-full bg-vevo-black overflow-y-auto no-scrollbar pb-32">
+            <!-- Header -->
+            <div class="px-6 pt-6 pb-4">
+                <h1 class="text-4xl font-black text-white mb-1">Library</h1>
+            </div>
+
+            <!-- Recently Downloaded Section -->
+            <div class="px-6 mb-8">
+                <h2 class="text-xs font-bold text-gray-400 tracking-widest mb-4 uppercase">Recently Downloaded</h2>
+                <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                    <!-- Circle 1 -->
+                    <div class="flex-shrink-0 text-center">
+                        <div class="w-32 h-32 gradient-circle rounded-full flex items-center justify-center mb-3 shadow-lg">
+                            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                        </div>
+                        <p class="text-white text-sm font-semibold">Bohemian<br/>Rhapsody</p>
+                    </div>
+
+                    <!-- Circle 2 -->
+                    <div class="flex-shrink-0 text-center">
+                        <div class="w-32 h-32 gradient-orange rounded-full flex items-center justify-center mb-3 shadow-lg">
+                            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                        </div>
+                        <p class="text-white text-sm font-semibold">Hotel<br/>California</p>
+                    </div>
+
+                    <!-- Circle 3 -->
+                    <div class="flex-shrink-0 text-center">
+                        <div class="w-32 h-32 gradient-blue rounded-full flex items-center justify-center mb-3 shadow-lg">
+                            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                        </div>
+                        <p class="text-white text-sm font-semibold">Stairway<br/>to Heaven</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Songs Section -->
+            <div class="px-6">
+                <h2 class="text-xs font-bold text-gray-400 tracking-widest mb-4 uppercase">All Songs (487)</h2>
+
+                <!-- Song Card 1 -->
+                <div class="bg-vevo-gray rounded-2xl p-4 mb-3 flex items-center gap-4 active:bg-gray-900 transition">
+                    <div class="w-16 h-16 gradient-circle rounded-xl flex items-center justify-center flex-shrink-0">
+                        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-white font-bold text-base truncate">Bohemian Rhapsody</h3>
+                        <p class="text-gray-400 text-sm">Queen</p>
+                        <p class="text-gray-500 text-xs">5:55 · MP3</p>
+                    </div>
+                    <button class="text-gray-500">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Song Card 2 -->
+                <div class="bg-vevo-gray rounded-2xl p-4 mb-3 flex items-center gap-4 active:bg-gray-900 transition">
+                    <div class="w-16 h-16 gradient-orange rounded-xl flex items-center justify-center flex-shrink-0">
+                        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-white font-bold text-base truncate">Hotel California</h3>
+                        <p class="text-gray-400 text-sm">Eagles</p>
+                        <p class="text-gray-500 text-xs">6:30 · M4A</p>
+                    </div>
+                    <button class="text-gray-500">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Song Card 3 -->
+                <div class="bg-vevo-gray rounded-2xl p-4 mb-3 flex items-center gap-4 active:bg-gray-900 transition">
+                    <div class="w-16 h-16 gradient-blue rounded-xl flex items-center justify-center flex-shrink-0">
+                        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-white font-bold text-base truncate">Stairway to Heaven</h3>
+                        <p class="text-gray-400 text-sm">Led Zeppelin</p>
+                        <p class="text-gray-500 text-xs">8:02 · MP3</p>
+                    </div>
+                    <button class="text-gray-500">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Song Card 4 -->
+                <div class="bg-vevo-gray rounded-2xl p-4 mb-3 flex items-center gap-4 active:bg-gray-900 transition">
+                    <div class="w-16 h-16 gradient-green rounded-xl flex items-center justify-center flex-shrink-0">
+                        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-white font-bold text-base truncate">Imagine</h3>
+                        <p class="text-gray-400 text-sm">John Lennon</p>
+                        <p class="text-gray-500 text-xs">3:03 · M4A</p>
+                    </div>
+                    <button class="text-gray-500">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="absolute bottom-0 left-0 right-0 h-20 bg-vevo-black border-t border-gray-900 flex justify-around items-center px-4">
+            <button class="flex flex-col items-center gap-1 text-white">
+                <svg class="tab-bar-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span class="text-xs font-medium">Library</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 text-gray-600">
+                <svg class="tab-bar-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                <span class="text-xs font-medium">Download</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 text-gray-600">
+                <svg class="tab-bar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M9 18V5l12-2v13M9 13c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z"/>
+                </svg>
+                <span class="text-xs font-medium">Playlists</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 text-gray-600">
+                <svg class="tab-bar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span class="text-xs font-medium">Profile</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Screen 3: Player / Detailed View -->
+    <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="status-bar text-white">
+            <span>9:41</span>
+            <div class="flex gap-2">
+                <svg class="lucide" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/></svg>
+                <svg class="lucide" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+            </div>
+        </div>
+
+        <!-- Player Content -->
+        <div class="h-full bg-vevo-black overflow-hidden flex flex-col">
+            <!-- Header with back button -->
+            <div class="px-6 pt-4 pb-2 flex items-center justify-between">
+                <button class="text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                </button>
+                <button class="text-white">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Album Art -->
+            <div class="px-8 py-12 flex-1 flex flex-col justify-center">
+                <div class="w-full aspect-square gradient-circle rounded-3xl shadow-2xl flex items-center justify-center mb-8 animate-slideUp">
+                    <svg class="w-32 h-32 text-white opacity-90" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    </svg>
+                </div>
+
+                <!-- Song Info -->
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-black text-white mb-2">Bohemian Rhapsody</h1>
+                    <p class="text-lg text-gray-400 font-medium">Queen</p>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mb-6">
+                    <div class="h-1 bg-gray-800 rounded-full mb-2">
+                        <div class="h-1 bg-white rounded-full" style="width: 45%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 font-medium">
+                        <span>2:38</span>
+                        <span>5:55</span>
+                    </div>
+                </div>
+
+                <!-- Playback Controls -->
+                <div class="flex items-center justify-center gap-8 mb-8">
+                    <button class="text-gray-400">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M7 6h10v2H7zm0 4h7v2H7zm0 4h10v2H7z"/>
+                        </svg>
+                    </button>
+                    <button class="text-white">
+                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                        </svg>
+                    </button>
+                    <button class="bg-white rounded-full p-5">
+                        <svg class="w-8 h-8 text-black" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>
+                        </svg>
+                    </button>
+                    <button class="text-white">
+                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                        </svg>
+                    </button>
+                    <button class="text-gray-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Volume -->
+                <div class="flex items-center gap-4">
+                    <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                    </svg>
+                    <div class="flex-1 h-1 bg-gray-800 rounded-full">
+                        <div class="h-1 bg-white rounded-full" style="width: 70%"></div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
