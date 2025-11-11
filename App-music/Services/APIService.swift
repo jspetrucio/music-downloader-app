@@ -7,6 +7,50 @@
 
 import Foundation
 
+// MARK: - Download Delegate
+
+private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
+    var progressHandler: ((Double) -> Void)?
+    var completionHandler: ((Result<URL, Error>) -> Void)?
+
+    private var lastUpdateTime: Date = .distantPast
+    private let throttleInterval: TimeInterval = 0.1  // 100ms throttle
+
+    func urlSession(
+        _ session: URLSession,
+        downloadTask: URLSessionDownloadTask,
+        didFinishDownloadingTo location: URL
+    ) {
+        completionHandler?(.success(location))
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        downloadTask: URLSessionDownloadTask,
+        didWriteData bytesWritten: Int64,
+        totalBytesWritten: Int64,
+        totalBytesExpectedToWrite: Int64
+    ) {
+        // Throttle progress updates to avoid overwhelming the UI
+        let now = Date()
+        guard now.timeIntervalSince(lastUpdateTime) >= throttleInterval else { return }
+        lastUpdateTime = now
+
+        guard totalBytesExpectedToWrite > 0 else { return }
+
+        let progress = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+        DispatchQueue.main.async { [weak self] in
+            self?.progressHandler?(progress)
+        }
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error = error {
+            completionHandler?(.failure(error))
+        }
+    }
+}
+
 @Observable
 final class APIService {
     static let shared = APIService()
@@ -17,6 +61,8 @@ final class APIService {
 
     // URLSession configuration
     private let session: URLSession
+    private let downloadSession: URLSession
+    private var downloadDelegates: [URLSessionDownloadTask: DownloadDelegate] = [:]
 
     // Retry configuration
     private let maxRetries = 3
@@ -28,6 +74,13 @@ final class APIService {
         config.timeoutIntervalForResource = 1800    // 30 min for long videos
         config.waitsForConnectivity = true          // Wait for reconnection if network drops
         self.session = URLSession(configuration: config)
+
+        // Create separate session for downloads with delegate
+        let downloadConfig = URLSessionConfiguration.default
+        downloadConfig.timeoutIntervalForRequest = 120
+        downloadConfig.timeoutIntervalForResource = 1800
+        downloadConfig.waitsForConnectivity = true
+        self.downloadSession = URLSession(configuration: downloadConfig)
     }
 
     // MARK: - Metadata
@@ -48,7 +101,7 @@ final class APIService {
 
     // MARK: - Download
 
-    /// Download audio file with progress tracking
+    /// Download audio file with progress tracking using URLSessionDownloadDelegate
     func downloadAudio(
         url: String,
         format: AudioFormat,
@@ -67,61 +120,73 @@ final class APIService {
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = try JSONEncoder().encode(request)
 
-        // Download with progress
+        // Create delegate for this download
+        let delegate = DownloadDelegate()
+        delegate.progressHandler = progress
+
+        // Create download task with delegate
+        let downloadTask = downloadSession.downloadTask(with: urlRequest)
+
+        // Store delegate reference
+        downloadDelegates[downloadTask] = delegate
+
+        // Set up delegate session
+        let delegateQueue = OperationQueue()
+        delegateQueue.maxConcurrentOperationCount = 1
+        delegateQueue.qualityOfService = .userInitiated
+
+        let sessionWithDelegate = URLSession(
+            configuration: downloadSession.configuration,
+            delegate: delegate,
+            delegateQueue: delegateQueue
+        )
+
+        // Download with delegate using async/await
         return try await withCheckedThrowingContinuation { continuation in
-            let task = session.downloadTask(with: urlRequest) { tempURL, response, error in
-                if let error = error {
-                    continuation.resume(throwing: APIError.networkError(error.localizedDescription))
-                    return
-                }
+            delegate.completionHandler = { [weak self] result in
+                // Clean up delegate reference
+                self?.downloadDelegates.removeValue(forKey: downloadTask)
 
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    continuation.resume(throwing: APIError.serverError("Invalid response"))
-                    return
-                }
+                switch result {
+                case .success(let tempURL):
+                    // Check HTTP response
+                    guard let httpResponse = downloadTask.response as? HTTPURLResponse else {
+                        continuation.resume(throwing: APIError.serverError("Invalid response"))
+                        return
+                    }
 
-                // Check for error responses
-                if httpResponse.statusCode != 200 {
-                    if let tempURL = tempURL,
-                       let errorData = try? Data(contentsOf: tempURL) {
-                        let decoder = JSONDecoder()
-                        if let errorResponse = try? decoder.decode(ErrorResponse.self, from: errorData) {
-                            continuation.resume(throwing: APIError.from(errorResponse: errorResponse))
+                    // Check for error responses
+                    if httpResponse.statusCode != 200 {
+                        if let errorData = try? Data(contentsOf: tempURL) {
+                            let decoder = JSONDecoder()
+                            if let errorResponse = try? decoder.decode(ErrorResponse.self, from: errorData) {
+                                continuation.resume(throwing: APIError.from(errorResponse: errorResponse))
+                            } else {
+                                continuation.resume(throwing: APIError.serverError("HTTP \(httpResponse.statusCode)"))
+                            }
                         } else {
                             continuation.resume(throwing: APIError.serverError("HTTP \(httpResponse.statusCode)"))
                         }
-                    } else {
-                        continuation.resume(throwing: APIError.serverError("HTTP \(httpResponse.statusCode)"))
+                        return
                     }
-                    return
-                }
 
-                guard let tempURL = tempURL else {
-                    continuation.resume(throwing: APIError.downloadFailed("No file downloaded"))
-                    return
-                }
+                    // Read data from temp file
+                    do {
+                        let data = try Data(contentsOf: tempURL)
+                        continuation.resume(returning: data)
+                    } catch {
+                        continuation.resume(throwing: APIError.downloadFailed(error.localizedDescription))
+                    }
 
-                do {
-                    let data = try Data(contentsOf: tempURL)
-                    continuation.resume(returning: data)
-                } catch {
-                    continuation.resume(throwing: APIError.downloadFailed(error.localizedDescription))
+                case .failure(let error):
+                    continuation.resume(throwing: APIError.networkError(error.localizedDescription))
                 }
             }
 
-            // Observe progress
-            let observation = task.progress.observe(\.fractionCompleted) { progressObject, _ in
-                DispatchQueue.main.async {
-                    progress(progressObject.fractionCompleted)
-                }
-            }
-
+            // Create new task with proper delegate
+            let task = sessionWithDelegate.downloadTask(with: urlRequest)
+            downloadDelegates[task] = delegate
             task.resume()
-
-            // Keep observation alive
-            withExtendedLifetime(observation) {
-                // Observation will be deallocated after task completes
-            }
         }
     }
 

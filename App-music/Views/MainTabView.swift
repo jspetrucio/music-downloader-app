@@ -8,51 +8,90 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Tab Definition
+
+enum Tab: Int, CaseIterable {
+    case download = 0
+    case library = 1
+    case playlists = 2
+    case settings = 3
+
+    var title: String {
+        switch self {
+        case .download: return "Download"
+        case .library: return "Biblioteca"
+        case .playlists: return "Playlists"
+        case .settings: return "Ajustes"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .download: return "arrow.down.circle.fill"
+        case .library: return "music.note.list"
+        case .playlists: return "rectangle.stack.fill"
+        case .settings: return "gear"
+        }
+    }
+}
+
 struct MainTabView: View {
-    @State private var selectedTab = 0
+    @State private var selectedTab: Tab = .download
     @State private var showFullPlayer = false
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // Main TabView
+        ZStack {
             TabView(selection: $selectedTab) {
                 DownloadView()
                     .tabItem {
-                        Label("Download", systemImage: "arrow.down.circle.fill")
+                        Label(Tab.download.title, systemImage: Tab.download.icon)
                     }
-                    .tag(0)
+                    .tag(Tab.download)
 
                 LibraryView()
                     .tabItem {
-                        Label("Biblioteca", systemImage: "music.note.list")
+                        Label(Tab.library.title, systemImage: Tab.library.icon)
                     }
-                    .tag(1)
+                    .tag(Tab.library)
 
                 PlaylistsView()
                     .tabItem {
-                        Label("Playlists", systemImage: "rectangle.stack.fill")
+                        Label(Tab.playlists.title, systemImage: Tab.playlists.icon)
                     }
-                    .tag(2)
+                    .tag(Tab.playlists)
 
                 SettingsView()
                     .tabItem {
-                        Label("Ajustes", systemImage: "gear")
+                        Label(Tab.settings.title, systemImage: Tab.settings.icon)
                     }
-                    .tag(3)
+                    .tag(Tab.settings)
             }
             .tint(Color.accentColor)
 
-            // Mini Player Overlay
+            // Mini player overlay
             if AudioPlayerService.shared.currentSong != nil {
-                MiniPlayerView(showFullPlayer: $showFullPlayer)
-                    .padding(.bottom, 49)  // Tab bar height
-                    .transition(.move(edge: .bottom))
+                VStack {
+                    if selectedTab == .download {
+                        // Top position for Download tab
+                        MiniPlayerView(showFullPlayer: $showFullPlayer)
+                            .transition(.move(edge: .top))
+                        Spacer()
+                    } else {
+                        // Bottom position for other tabs
+                        Spacer()
+                        MiniPlayerView(showFullPlayer: $showFullPlayer)
+                            .padding(.bottom, 49) // Tab bar height
+                            .transition(.move(edge: .bottom))
+                    }
+                }
+                .animation(.easeInOut(duration: DesignTokens.animationSlow), value: selectedTab)
             }
         }
         .fullScreenCover(isPresented: $showFullPlayer) {
             FullPlayerView(isPresented: $showFullPlayer)
         }
     }
+
 }
 
 #Preview {

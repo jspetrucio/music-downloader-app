@@ -14,6 +14,8 @@ struct LibraryView: View {
 
     @State private var searchText = ""
     @State private var sortOption: SortOption = .recent
+    @State private var songToDelete: DownloadedSong?
+    @State private var showDeleteConfirmation = false
 
     private var filteredSongs: [DownloadedSong] {
         var filtered = songs
@@ -55,6 +57,22 @@ struct LibraryView: View {
                     sortMenu
                 }
             }
+            .confirmationDialog(
+                "Excluir '\(songToDelete?.title ?? "")'?",
+                isPresented: $showDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Excluir", role: .destructive) {
+                    if let song = songToDelete {
+                        confirmDelete(song)
+                    }
+                }
+                Button("Cancelar", role: .cancel) {
+                    songToDelete = nil
+                }
+            } message: {
+                Text("Esta ação não pode ser desfeita. O arquivo será removido permanentemente do seu dispositivo.")
+            }
         }
     }
 
@@ -84,9 +102,10 @@ struct LibraryView: View {
                     .onTapGesture {
                         playSong(song)
                     }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
-                            deleteSong(song)
+                            songToDelete = song
+                            showDeleteConfirmation = true
                         } label: {
                             Label("Excluir", systemImage: "trash")
                         }
@@ -119,11 +138,13 @@ struct LibraryView: View {
         )
     }
 
-    private func deleteSong(_ song: DownloadedSong) {
+    private func confirmDelete(_ song: DownloadedSong) {
         do {
             try DownloadService.shared.deleteSong(song, modelContext: modelContext)
+            songToDelete = nil
         } catch {
             print("Failed to delete song: \(error)")
+            // TODO: Show error alert to user
         }
     }
 }

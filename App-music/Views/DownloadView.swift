@@ -15,10 +15,11 @@ struct DownloadView: View {
     @State private var selectedFormat: AudioFormat = .m4a
     @State private var metadata: MetadataResponse?
     @State private var isLoadingMetadata = false
-    @State private var isDownloading = false
-    @State private var downloadProgress: Double = 0
+    @State private var downloadState: DownloadState = .idle
     @State private var errorMessage: String?
     @State private var showError = false
+    @State private var showSuccessAlert = false
+    @State private var successTitle = ""
 
     private let apiService = APIService.shared
     private let downloadService = DownloadService.shared
@@ -46,13 +47,20 @@ struct DownloadView: View {
                 .padding()
             }
             .navigationTitle("Download")
-            .background(Color.black)
+            .downloadBackground()
             .alert("Erro", isPresented: $showError) {
                 Button("OK", role: .cancel) {}
             } message: {
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
                 }
+            }
+            .alert("Download Concluído", isPresented: $showSuccessAlert) {
+                Button("OK", role: .cancel) {
+                    resetForm()
+                }
+            } message: {
+                Text("'\(successTitle)' foi baixada com sucesso e está disponível na sua biblioteca.")
             }
         }
     }
@@ -200,25 +208,48 @@ struct DownloadView: View {
     }
 
     private var downloadButton: some View {
-        Button {
-            Task { await downloadSong() }
-        } label: {
-            HStack {
-                if isDownloading {
-                    ProgressView(value: downloadProgress)
-                        .tint(.white)
-                        .frame(width: 100)
-                    Text("\(Int(downloadProgress * 100))%")
-                } else {
-                    Image(systemName: "arrow.down.circle.fill")
-                    Text("Baixar Música")
+        VStack(spacing: 12) {
+            // Progress bar (shown during download)
+            if downloadState.isDownloading {
+                VStack(spacing: 8) {
+                    ProgressView(value: downloadState.progress)
+                        .customProgressStyle()
+
+                    HStack {
+                        Text(downloadState.statusText)
+                            .font(.caption)
+                            .foregroundColor(downloadState.statusColor)
+
+                        Spacer()
+
+                        Text("\(Int(downloadState.progress * 100))%")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundColor(downloadState.statusColor)
+                    }
                 }
+                .padding(.horizontal)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
+
+            // Download button
+            Button {
+                Task { await downloadSong() }
+            } label: {
+                HStack {
+                    if downloadState.isDownloading {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Image(systemName: "arrow.down.circle.fill")
+                    }
+                    Text(downloadState.downloadButtonText)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(downloadState.downloadButtonDisabled)
         }
-        .buttonStyle(.borderedProminent)
-        .disabled(isDownloading)
     }
 
     // MARK: - Actions
@@ -244,9 +275,9 @@ struct DownloadView: View {
 
     private func downloadSong() async {
         guard !urlInput.isEmpty else { return }
+        guard let songTitle = metadata?.metadata.title else { return }
 
-        isDownloading = true
-        downloadProgress = 0
+        downloadState = .downloading(progress: 0)
         errorMessage = nil
 
         do {
@@ -255,24 +286,31 @@ struct DownloadView: View {
                 format: selectedFormat,
                 modelContext: modelContext,
                 progress: { progress in
-                    downloadProgress = progress
+                    downloadState = .downloading(progress: progress)
                 }
             )
 
-            // Success - reset form
-            urlInput = ""
-            metadata = nil
-            downloadProgress = 0
+            // Success - show alert
+            downloadState = .success(title: songTitle)
+            successTitle = songTitle
+            showSuccessAlert = true
 
         } catch let error as APIError {
+            downloadState = .error(message: error.localizedDescription)
             errorMessage = error.localizedDescription
             showError = true
         } catch {
+            downloadState = .error(message: error.localizedDescription)
             errorMessage = error.localizedDescription
             showError = true
         }
+    }
 
-        isDownloading = false
+    private func resetForm() {
+        urlInput = ""
+        metadata = nil
+        downloadState = .idle
+        successTitle = ""
     }
 
     // MARK: - Helpers
