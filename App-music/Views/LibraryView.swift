@@ -42,77 +42,101 @@ struct LibraryView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if songs.isEmpty {
-                    emptyState
-                } else {
-                    songList
-                }
-            }
-            .navigationTitle("Biblioteca")
-            .searchable(text: $searchText, prompt: "Buscar músicas")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    sortMenu
-                }
-            }
-            .confirmationDialog(
-                "Excluir '\(songToDelete?.title ?? "")'?",
-                isPresented: $showDeleteConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Excluir", role: .destructive) {
-                    if let song = songToDelete {
-                        confirmDelete(song)
+        ZStack {
+            // Animated background
+            AnimatedBackgroundView()
+                .ignoresSafeArea()
+            
+            NavigationStack {
+                Group {
+                    if songs.isEmpty {
+                        emptyState
+                    } else {
+                        songList
                     }
                 }
-                Button("Cancelar", role: .cancel) {
-                    songToDelete = nil
+                .navigationTitle("Biblioteca")
+                .navigationBarTitleDisplayMode(.large)
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .searchable(text: $searchText, prompt: "Buscar músicas")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        sortMenu
+                    }
                 }
-            } message: {
-                Text("Esta ação não pode ser desfeita. O arquivo será removido permanentemente do seu dispositivo.")
+                .confirmationDialog(
+                    "Excluir '\(songToDelete?.title ?? "")'?",
+                    isPresented: $showDeleteConfirmation,
+                    titleVisibility: .visible
+                ) {
+                    Button("Excluir", role: .destructive) {
+                        if let song = songToDelete {
+                            confirmDelete(song)
+                        }
+                    }
+                    Button("Cancelar", role: .cancel) {
+                        songToDelete = nil
+                    }
+                } message: {
+                    Text("Esta ação não pode ser desfeita. O arquivo será removido permanentemente do seu dispositivo.")
+                }
             }
         }
+        .preferredColorScheme(.dark)
     }
 
     // MARK: - UI Components
 
     private var emptyState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "music.note")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
+        VStack(spacing: DesignTokens.spacingMD) {
+            Spacer()
+            
+            VStack(spacing: DesignTokens.spacingMD) {
+                Image(systemName: "music.note")
+                    .font(.system(size: 64))
+                    .foregroundStyle(DesignTokens.textTertiary)
 
-            Text("Nenhuma música baixada")
-                .font(.title3)
-                .fontWeight(.medium)
+                Text("Nenhuma música baixada")
+                    .font(.title3)
+                    .fontWeight(.medium)
+                    .foregroundColor(DesignTokens.textPrimary)
 
-            Text("Baixe músicas na aba Download")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                Text("Baixe músicas na aba Download")
+                    .font(.subheadline)
+                    .foregroundStyle(DesignTokens.textSecondary)
+            }
+            .padding(DesignTokens.spacingXL)
+            .minimalistCard()
+            .padding(.horizontal, DesignTokens.spacingMD)
+            
+            Spacer()
         }
     }
 
     private var songList: some View {
-        List {
-            ForEach(filteredSongs) { song in
-                SongRow(song: song)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        playSong(song)
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            songToDelete = song
-                            showDeleteConfirmation = true
-                        } label: {
-                            Label("Excluir", systemImage: "trash")
+        ScrollView {
+            LazyVStack(spacing: DesignTokens.spacingSM) {
+                ForEach(filteredSongs) { song in
+                    SongRow(song: song)
+                        .minimalistCard(padding: DesignTokens.spacingSM)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            playSong(song)
                         }
-                    }
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                songToDelete = song
+                                showDeleteConfirmation = true
+                            } label: {
+                                Label("Excluir", systemImage: "trash")
+                            }
+                        }
+                }
             }
+            .padding(.horizontal, DesignTokens.spacingMD)
+            .padding(.top, DesignTokens.spacingSM)
+            .padding(.bottom, DesignTokens.spacingXL)
         }
-        .listStyle(.plain)
     }
 
     private var sortMenu: some View {
@@ -125,6 +149,7 @@ struct LibraryView: View {
             }
         } label: {
             Image(systemName: "arrow.up.arrow.down")
+                .foregroundColor(DesignTokens.accentPrimary)
         }
     }
 
@@ -155,7 +180,7 @@ struct SongRow: View {
     let song: DownloadedSong
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DesignTokens.spacingSM) {
             // Thumbnail or placeholder
             if let thumbnailURL = song.thumbnailURL,
                let url = URL(string: thumbnailURL) {
@@ -164,20 +189,22 @@ struct SongRow: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 } placeholder: {
-                    Rectangle()
-                        .fill(Color(.systemGray5))
+                    ZStack {
+                        DesignTokens.backgroundTertiary
+                        ProgressView()
+                            .tint(DesignTokens.accentPrimary)
+                    }
                 }
                 .frame(width: 60, height: 60)
-                .cornerRadius(8)
+                .cornerRadius(DesignTokens.cornerRadiusMedium)
             } else {
-                Rectangle()
-                    .fill(Color(.systemGray5))
-                    .frame(width: 60, height: 60)
-                    .cornerRadius(8)
-                    .overlay {
-                        Image(systemName: "music.note")
-                            .foregroundStyle(.secondary)
-                    }
+                ZStack {
+                    DesignTokens.backgroundTertiary
+                    Image(systemName: "music.note")
+                        .foregroundStyle(DesignTokens.textTertiary)
+                }
+                .frame(width: 60, height: 60)
+                .cornerRadius(DesignTokens.cornerRadiusMedium)
             }
 
             // Song info
@@ -185,11 +212,12 @@ struct SongRow: View {
                 Text(song.title)
                     .font(.body)
                     .fontWeight(.medium)
+                    .foregroundColor(DesignTokens.textPrimary)
                     .lineLimit(1)
 
                 Text(song.artist)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.textSecondary)
                     .lineLimit(1)
 
                 HStack(spacing: 12) {
@@ -198,7 +226,7 @@ struct SongRow: View {
                     Label(song.format.rawValue.uppercased(), systemImage: "waveform")
                 }
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(DesignTokens.textTertiary)
             }
 
             Spacer()
@@ -206,23 +234,21 @@ struct SongRow: View {
             // File status indicator
             if !song.fileExists {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(DesignTokens.warning)
                     .font(.caption)
-                    .help("Arquivo não encontrado")
             }
             
             // Play count badge
             if song.playCount > 0 {
                 VStack(spacing: 2) {
                     Image(systemName: "play.circle.fill")
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(DesignTokens.accentPrimary)
                     Text("\(song.playCount)")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DesignTokens.textSecondary)
                 }
             }
         }
-        .padding(.vertical, 8)
         .opacity(song.fileExists ? 1.0 : 0.6)
     }
 }

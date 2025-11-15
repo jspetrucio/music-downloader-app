@@ -16,79 +16,120 @@ struct PlaylistsView: View {
     @State private var newPlaylistName = ""
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if playlists.isEmpty {
-                    emptyState
-                } else {
-                    playlistList
+        ZStack {
+            // Animated background
+            AnimatedBackgroundView()
+                .ignoresSafeArea()
+            
+            NavigationStack {
+                Group {
+                    if playlists.isEmpty {
+                        emptyState
+                    } else {
+                        playlistList
+                    }
                 }
-            }
-            .navigationTitle("Playlists")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showCreatePlaylist = true
-                    } label: {
-                        Image(systemName: "plus")
+                .navigationTitle("Playlists")
+                .navigationBarTitleDisplayMode(.large)
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showCreatePlaylist = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundColor(DesignTokens.accentPrimary)
+                                .font(.title3)
+                        }
+                    }
+                }
+                .alert("Nova Playlist", isPresented: $showCreatePlaylist) {
+                    TextField("Nome da playlist", text: $newPlaylistName)
+                    Button("Cancelar", role: .cancel) {
+                        newPlaylistName = ""
+                    }
+                    Button("Criar") {
+                        createPlaylist()
                     }
                 }
             }
-            .alert("Nova Playlist", isPresented: $showCreatePlaylist) {
-                TextField("Nome da playlist", text: $newPlaylistName)
-                Button("Cancelar", role: .cancel) {
-                    newPlaylistName = ""
-                }
-                Button("Criar") {
-                    createPlaylist()
-                }
-            }
         }
+        .preferredColorScheme(.dark)
     }
 
     // MARK: - UI Components
 
     private var emptyState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "rectangle.stack")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
+        VStack(spacing: DesignTokens.spacingMD) {
+            Spacer()
+            
+            VStack(spacing: DesignTokens.spacingMD) {
+                Image(systemName: "rectangle.stack")
+                    .font(.system(size: 64))
+                    .foregroundStyle(DesignTokens.textTertiary)
 
-            Text("Nenhuma playlist criada")
-                .font(.title3)
-                .fontWeight(.medium)
+                Text("Nenhuma playlist criada")
+                    .font(.title3)
+                    .fontWeight(.medium)
+                    .foregroundColor(DesignTokens.textPrimary)
 
-            Text("Crie playlists para organizar suas músicas")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                Text("Crie playlists para organizar suas músicas")
+                    .font(.subheadline)
+                    .foregroundStyle(DesignTokens.textSecondary)
+                    .multilineTextAlignment(.center)
 
-            Button {
-                showCreatePlaylist = true
-            } label: {
-                Label("Criar Playlist", systemImage: "plus.circle.fill")
+                Button {
+                    showCreatePlaylist = true
+                } label: {
+                    HStack(spacing: DesignTokens.spacingXS) {
+                        Image(systemName: "plus.circle.fill")
+                        Text("Criar Playlist")
+                    }
+                    .foregroundColor(.white)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, DesignTokens.spacingMD)
+                    .padding(.vertical, DesignTokens.spacingSM)
+                    .background(
+                        LinearGradient(
+                            colors: [DesignTokens.accentPrimary, DesignTokens.accentSecondary],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(DesignTokens.cornerRadiusXL)
+                }
+                .padding(.top, DesignTokens.spacingSM)
             }
-            .buttonStyle(.borderedProminent)
+            .padding(DesignTokens.spacingXL)
+            .minimalistCard()
+            .padding(.horizontal, DesignTokens.spacingMD)
+            
+            Spacer()
         }
-        .padding()
     }
 
     private var playlistList: some View {
-        List {
-            ForEach(playlists) { playlist in
-                NavigationLink(destination: PlaylistDetailView(playlist: playlist)) {
-                    PlaylistRow(playlist: playlist)
-                }
-                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                    Button(role: .destructive) {
-                        deletePlaylist(playlist)
-                    } label: {
-                        Label("Excluir", systemImage: "trash")
+        ScrollView {
+            LazyVStack(spacing: DesignTokens.spacingSM) {
+                ForEach(playlists) { playlist in
+                    NavigationLink(destination: PlaylistDetailView(playlist: playlist)) {
+                        PlaylistRow(playlist: playlist)
+                            .minimalistCard(padding: DesignTokens.spacingSM)
+                    }
+                    .buttonStyle(.plain)
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            deletePlaylist(playlist)
+                        } label: {
+                            Label("Excluir", systemImage: "trash")
+                        }
                     }
                 }
             }
+            .padding(.horizontal, DesignTokens.spacingMD)
+            .padding(.top, DesignTokens.spacingSM)
+            .padding(.bottom, DesignTokens.spacingXL)
         }
-        .listStyle(.plain)
     }
 
     // MARK: - Actions
@@ -124,17 +165,27 @@ struct PlaylistRow: View {
     let playlist: Playlist
 
     var body: some View {
-        HStack(spacing: 16) {
-            // Icon
+        HStack(spacing: DesignTokens.spacingSM) {
+            // Icon with gradient
             ZStack {
-                Rectangle()
-                    .fill(Color.accentColor.opacity(0.2))
-                    .frame(width: 60, height: 60)
-                    .cornerRadius(8)
+                LinearGradient(
+                    colors: [
+                        DesignTokens.accentPrimary.opacity(0.3),
+                        DesignTokens.accentSecondary.opacity(0.2)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .frame(width: 60, height: 60)
+                .cornerRadius(DesignTokens.cornerRadiusMedium)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium)
+                        .stroke(DesignTokens.accentPrimary.opacity(0.5), lineWidth: 1)
+                )
 
                 Image(systemName: "music.note.list")
                     .font(.title2)
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(DesignTokens.accentPrimary)
             }
 
             // Playlist info
@@ -142,6 +193,7 @@ struct PlaylistRow: View {
                 Text(playlist.name)
                     .font(.body)
                     .fontWeight(.medium)
+                    .foregroundColor(DesignTokens.textPrimary)
 
                 if playlist.songCount > 0 {
                     HStack(spacing: 12) {
@@ -149,11 +201,11 @@ struct PlaylistRow: View {
                         Label(playlist.formattedTotalDuration, systemImage: "clock")
                     }
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.textSecondary)
                 } else {
                     Text("Vazia")
                         .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(DesignTokens.textTertiary)
                 }
             }
 
@@ -161,9 +213,8 @@ struct PlaylistRow: View {
 
             Image(systemName: "chevron.right")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(DesignTokens.textTertiary)
         }
-        .padding(.vertical, 8)
     }
 }
 

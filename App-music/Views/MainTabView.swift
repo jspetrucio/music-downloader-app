@@ -66,7 +66,27 @@ struct MainTabView: View {
                     }
                     .tag(Tab.settings)
             }
-            .tint(Color.accentColor)
+            .tint(DesignTokens.accentPrimary)
+            .onAppear {
+                // Configure tab bar appearance
+                let appearance = UITabBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = UIColor(DesignTokens.backgroundPrimary)
+                
+                // Tab bar item colors
+                appearance.stackedLayoutAppearance.normal.iconColor = UIColor(DesignTokens.textSecondary)
+                appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+                    .foregroundColor: UIColor(DesignTokens.textSecondary)
+                ]
+                
+                appearance.stackedLayoutAppearance.selected.iconColor = UIColor(DesignTokens.accentPrimary)
+                appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+                    .foregroundColor: UIColor(DesignTokens.accentPrimary)
+                ]
+                
+                UITabBar.appearance().standardAppearance = appearance
+                UITabBar.appearance().scrollEdgeAppearance = appearance
+            }
 
             // Mini player overlay
             if AudioPlayerService.shared.currentSong != nil {
@@ -87,6 +107,7 @@ struct MainTabView: View {
                 .animation(.easeInOut(duration: DesignTokens.animationSlow), value: selectedTab)
             }
         }
+        .preferredColorScheme(.dark)
         .fullScreenCover(isPresented: $showFullPlayer) {
             FullPlayerView(isPresented: $showFullPlayer)
         }

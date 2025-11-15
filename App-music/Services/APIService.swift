@@ -15,12 +15,15 @@ private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
 
     private var lastUpdateTime: Date = .distantPast
     private let throttleInterval: TimeInterval = 0.1  // 100ms throttle
+    private var hasCompleted = false  // Prevent double completion
 
     func urlSession(
         _ session: URLSession,
         downloadTask: URLSessionDownloadTask,
         didFinishDownloadingTo location: URL
     ) {
+        guard !hasCompleted else { return }
+        hasCompleted = true
         completionHandler?(.success(location))
     }
 
@@ -46,6 +49,8 @@ private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error {
+            guard !hasCompleted else { return }
+            hasCompleted = true
             completionHandler?(.failure(error))
         }
     }
@@ -61,8 +66,6 @@ final class APIService {
 
     // URLSession configuration
     private let session: URLSession
-    private let downloadSession: URLSession
-    private var downloadDelegates: [URLSessionDownloadTask: DownloadDelegate] = [:]
 
     // Retry configuration
     private let maxRetries = 3
@@ -74,13 +77,6 @@ final class APIService {
         config.timeoutIntervalForResource = 1800    // 30 min for long videos
         config.waitsForConnectivity = true          // Wait for reconnection if network drops
         self.session = URLSession(configuration: config)
-
-        // Create separate session for downloads with delegate
-        let downloadConfig = URLSessionConfiguration.default
-        downloadConfig.timeoutIntervalForRequest = 120
-        downloadConfig.timeoutIntervalForResource = 1800
-        downloadConfig.waitsForConnectivity = true
-        self.downloadSession = URLSession(configuration: downloadConfig)
     }
 
     // MARK: - Metadata
@@ -124,39 +120,41 @@ final class APIService {
         let delegate = DownloadDelegate()
         delegate.progressHandler = progress
 
-        // Create download task with delegate
-        let downloadTask = downloadSession.downloadTask(with: urlRequest)
-
-        // Store delegate reference
-        downloadDelegates[downloadTask] = delegate
-
-        // Set up delegate session
+        // Create URLSession with delegate configured upfront
         let delegateQueue = OperationQueue()
         delegateQueue.maxConcurrentOperationCount = 1
         delegateQueue.qualityOfService = .userInitiated
 
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 120
+        config.timeoutIntervalForResource = 1800
+        config.waitsForConnectivity = true
+
         let sessionWithDelegate = URLSession(
-            configuration: downloadSession.configuration,
+            configuration: config,
             delegate: delegate,
             delegateQueue: delegateQueue
         )
 
         // Download with delegate using async/await
         return try await withCheckedThrowingContinuation { continuation in
-            delegate.completionHandler = { [weak self] result in
-                // Clean up delegate reference
-                self?.downloadDelegates.removeValue(forKey: downloadTask)
+            // Create single download task from delegate-configured session
+            let downloadTask = sessionWithDelegate.downloadTask(with: urlRequest)
 
+            delegate.completionHandler = { result in
                 switch result {
                 case .success(let tempURL):
-                    // Check HTTP response
+                    // Check HTTP response from the ACTUAL task that ran
                     guard let httpResponse = downloadTask.response as? HTTPURLResponse else {
+                        sessionWithDelegate.finishTasksAndInvalidate()
                         continuation.resume(throwing: APIError.serverError("Invalid response"))
                         return
                     }
 
                     // Check for error responses
                     if httpResponse.statusCode != 200 {
+                        sessionWithDelegate.finishTasksAndInvalidate()
+
                         if let errorData = try? Data(contentsOf: tempURL) {
                             let decoder = JSONDecoder()
                             if let errorResponse = try? decoder.decode(ErrorResponse.self, from: errorData) {
@@ -173,20 +171,21 @@ final class APIService {
                     // Read data from temp file
                     do {
                         let data = try Data(contentsOf: tempURL)
+                        sessionWithDelegate.finishTasksAndInvalidate()
                         continuation.resume(returning: data)
                     } catch {
+                        sessionWithDelegate.finishTasksAndInvalidate()
                         continuation.resume(throwing: APIError.downloadFailed(error.localizedDescription))
                     }
 
                 case .failure(let error):
+                    sessionWithDelegate.finishTasksAndInvalidate()
                     continuation.resume(throwing: APIError.networkError(error.localizedDescription))
                 }
             }
 
-            // Create new task with proper delegate
-            let task = sessionWithDelegate.downloadTask(with: urlRequest)
-            downloadDelegates[task] = delegate
-            task.resume()
+            // Start the download task
+            downloadTask.resume()
         }
     }
 

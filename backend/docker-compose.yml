@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: music-downloader-backend
+    image: music-downloader-backend:latest
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Override specific settings for containerized deployment
+      - HOST=0.0.0.0
+      - PORT=8000
+      - TEMP_DIR=/tmp/music_downloader
+    volumes:
+      # Persistent volume for temporary files
+      - ./temp:/tmp/music_downloader
+      # Optional: Mount app code for development (comment out for production)
+      # - ./app:/app/app:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - music-downloader-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  music-downloader-network:
+    driver: bridge
+    name: music-downloader-network
+
+volumes:
+  # Named volume for better production use
+  music_temp:
+    driver: local
