@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download - App Music Redesign</title>
+    
+    <!-- Google Fonts - Inter (Apple-like) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ========================================
+           DESIGN SYSTEM - APPLE MINIMALIST
+           ======================================== */
+        
+        :root {
+            /* Backgrounds - Pure black foundation */
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #1a1a1a;
+            
+            /* Glass/Frosted effects - Signature Apple aesthetic */
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-hover: rgba(255, 255, 255, 0.08);
+            --glass-active: rgba(255, 255, 255, 0.12);
+            
+            /* Text hierarchy - High contrast monochrome */
+            --text-primary: #FFFFFF;
+            --text-secondary: #8E8E93;
+            --text-tertiary: #48484A;
+            
+            /* Accent - iOS blue (use sparingly) */
+            --accent: #0A84FF;
+            --accent-hover: #409CFF;
+            
+            /* Typography - SF Pro Display style */
+            --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            
+            /* Type scale - Large and spacious */
+            --text-xs: 12px;
+            --text-sm: 14px;
+            --text-base: 16px;
+            --text-lg: 20px;
+            --text-xl: 28px;
+            --text-2xl: 36px;
+            --text-3xl: 48px;
+            --text-4xl: 64px;
+            
+            /* Font weights */
+            --weight-light: 300;
+            --weight-regular: 400;
+            --weight-medium: 500;
+            --weight-semibold: 600;
+            --weight-bold: 700;
+            
+            /* Spacing - 8px scale with generous padding */
+            --space-1: 8px;
+            --space-2: 16px;
+            --space-3: 24px;
+            --space-4: 32px;
+            --space-5: 40px;
+            --space-6: 48px;
+            --space-8: 64px;
+            --space-10: 80px;
+            
+            /* Border radius - Generous rounded corners */
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --radius-full: 9999px;
+            
+            /* Shadows - Subtle depth */
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --shadow-medium: 0 12px 48px rgba(0, 0, 0, 0.6);
+        }
+        
+        /* ========================================
+           BASE RESET
+           ======================================== */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+        
+        /* ========================================
+           UTILITY CLASSES
+           ======================================== */
+        
+        /* Glassmorphism effect - Core visual signature */
+        .glass {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .glass-hover:hover {
+            background: var(--glass-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        /* ========================================
+           LAYOUT
+           ======================================== */
+        
+        .container {
+            max-width: 428px;
+            margin: 0 auto;
+            padding: var(--space-6) var(--space-3);
+            min-height: 100vh;
+            /* Subtle gradient for depth */
+            background: linear-gradient(180deg, 
+                var(--bg-primary) 0%, 
+                var(--bg-secondary) 50%,
+                var(--bg-primary) 100%
+            );
+        }
+        
+        /* ========================================
+           HEADER - Large typography, minimal elements
+           ======================================== */
+        
+        .header {
+            margin-bottom: var(--space-8);
+            text-align: center;
+        }
+        
+        .header__title {
+            font-size: var(--text-3xl);
+            font-weight: var(--weight-light);
+            letter-spacing: -0.02em;
+            margin-bottom: var(--space-2);
+            color: var(--text-primary);
+        }
+        
+        .header__subtitle {
+            font-size: var(--text-base);
+            font-weight: var(--weight-regular);
+            color: var(--text-secondary);
+            letter-spacing: 0.01em;
+        }
+        
+        /* ========================================
+           STATS CARD - Glassmorphism showcase
+           ======================================== */
+        
+        .stats-card {
+            margin-bottom: var(--space-8);
+            padding: var(--space-6);
+            border-radius: var(--radius-xl);
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .stats-card__number {
+            font-size: var(--text-4xl);
+            font-weight: var(--weight-light);
+            letter-spacing: -0.03em;
+            margin-bottom: var(--space-2);
+            background: linear-gradient(135deg, #FFFFFF 0%, #8E8E93 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stats-card__label {
+            font-size: var(--text-sm);
+            font-weight: var(--weight-medium);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        /* ========================================
+           DOWNLOAD SECTION
+           ======================================== */
+        
+        .download-section {
+            margin-bottom: var(--space-10);
+        }
+        
+        .section-title {
+            font-size: var(--text-lg);
+            font-weight: var(--weight-semibold);
+            margin-bottom: var(--space-4);
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+        
+        /* Input group - iOS style */
+        .input-group {
+            margin-bottom: var(--space-3);
+        }
+        
+        .input {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            font-weight: var(--weight-regular);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .input::placeholder {
+            color: var(--text-tertiary);
+        }
+        
+        .input:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Button - Outline style (Apple aesthetic) */
+        .btn {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            background: transparent;
+            border: 1.5px solid var(--text-primary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            font-weight: var(--weight-semibold);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.02em;
+            text-transform: none;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* ========================================
+           RECENT DOWNLOADS - Card grid
+           ======================================== */
+        
+        .recent-section {
+            margin-bottom: var(--space-10);
+        }
+        
+        .recent-grid {
+            display: grid;
+            gap: var(--space-4);
+        }
+        
+        .track-card {
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .track-card__content {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        /* Album art with glassmorphism overlay */
+        .track-card__cover {
+            width: 72px;
+            height: 72px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .track-card__cover::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.05);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .track-card:hover .track-card__cover::after {
+            opacity: 1;
+        }
+        
+        /* Music icon placeholder */
+        .track-card__icon {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            opacity: 0.3;
+        }
+        
+        .track-card__info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .track-card__title {
+            font-size: var(--text-base);
+            font-weight: var(--weight-semibold);
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .track-card__artist {
+            font-size: var(--text-sm);
+            font-weight: var(--weight-regular);
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .track-card__duration {
+            font-size: var(--text-sm);
+            font-weight: var(--weight-medium);
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+        }
+        
+        /* ========================================
+           BOTTOM NAV - iOS style tab bar
+           ======================================== */
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 428px;
+            width: 100%;
+            padding: var(--space-2) var(--space-3) calc(var(--space-2) + env(safe-area-inset-bottom));
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .bottom-nav__items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .bottom-nav__item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: var(--space-1);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .bottom-nav__item--active {
+            color: var(--text-primary);
+        }
+        
+        .bottom-nav__icon {
+            font-size: 24px;
+            font-weight: var(--weight-light);
+        }
+        
+        .bottom-nav__label {
+            font-size: 10px;
+            font-weight: var(--weight-medium);
+            letter-spacing: 0.02em;
+        }
+        
+        /* ========================================
+           ANIMATIONS & TRANSITIONS
+           ======================================== */
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header {
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        .stats-card {
+            animation: fadeInUp 0.6s ease 0.1s backwards;
+        }
+        
+        .download-section {
+            animation: fadeInUp 0.6s ease 0.2s backwards;
+        }
+        
+        .recent-section {
+            animation: fadeInUp 0.6s ease 0.3s backwards;
+        }
+        
+        /* ========================================
+           RESPONSIVE DESIGN
+           ======================================== */
+        
+        @media (max-width: 375px) {
+            .header__title {
+                font-size: var(--text-2xl);
+            }
+            
+            .stats-card__number {
+                font-size: var(--text-3xl);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header - Large, centered, minimal -->
+        <header class="header">
+            <h1 class="header__title">Download</h1>
+            <p class="header__subtitle">Save music from YouTube</p>
+        </header>
+        
+        <!-- Stats Card - Glassmorphism showcase -->
+        <div class="stats-card glass">
+            <div class="stats-card__number">20</div>
+            <div class="stats-card__label">Downloads Today</div>
+        </div>
+        
+        <!-- Download Section -->
+        <section class="download-section">
+            <h2 class="section-title">New Download</h2>
+            
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    class="input" 
+                    placeholder="Paste YouTube URL"
+                    aria-label="YouTube URL"
+                >
+            </div>
+            
+            <button class="btn" aria-label="Download music">
+                Download
+            </button>
+        </section>
+        
+        <!-- Recent Downloads -->
+        <section class="recent-section">
+            <h2 class="section-title">Recently Downloaded</h2>
+            
+            <div class="recent-grid">
+                <!-- Track Card 1 -->
+                <div class="track-card glass glass-hover">
+                    <div class="track-card__content">
+                        <div class="track-card__cover">
+                            <div class="track-card__icon">♪</div>
+                        </div>
+                        <div class="track-card__info">
+                            <div class="track-card__title">Blinding Lights</div>
+                            <div class="track-card__artist">The Weeknd</div>
+                        </div>
+                        <div class="track-card__duration">3:20</div>
+                    </div>
+                </div>
+                
+                <!-- Track Card 2 -->
+                <div class="track-card glass glass-hover">
+                    <div class="track-card__content">
+                        <div class="track-card__cover">
+                            <div class="track-card__icon">♪</div>
+                        </div>
+                        <div class="track-card__info">
+                            <div class="track-card__title">Starboy</div>
+                            <div class="track-card__artist">The Weeknd ft. Daft Punk</div>
+                        </div>
+                        <div class="track-card__duration">3:50</div>
+                    </div>
+                </div>
+                
+                <!-- Track Card 3 -->
+                <div class="track-card glass glass-hover">
+                    <div class="track-card__content">
+                        <div class="track-card__cover">
+                            <div class="track-card__icon">♪</div>
+                        </div>
+                        <div class="track-card__info">
+                            <div class="track-card__title">Save Your Tears</div>
+                            <div class="track-card__artist">The Weeknd & Ariana Grande</div>
+                        </div>
+                        <div class="track-card__duration">3:35</div>
+                    </div>
+                </div>
+                
+                <!-- Track Card 4 -->
+                <div class="track-card glass glass-hover">
+                    <div class="track-card__content">
+                        <div class="track-card__cover">
+                            <div class="track-card__icon">♪</div>
+                        </div>
+                        <div class="track-card__info">
+                            <div class="track-card__title">Die For You</div>
+                            <div class="track-card__artist">The Weeknd</div>
+                        </div>
+                        <div class="track-card__duration">4:20</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Bottom Navigation - iOS Tab Bar Style -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav__items">
+            <a href="#" class="bottom-nav__item bottom-nav__item--active">
+                <span class="bottom-nav__icon">↓</span>
+                <span class="bottom-nav__label">Download</span>
+            </a>
+            <a href="#" class="bottom-nav__item">
+                <span class="bottom-nav__icon">♪</span>
+                <span class="bottom-nav__label">Library</span>
+            </a>
+            <a href="#" class="bottom-nav__item">
+                <span class="bottom-nav__icon">☰</span>
+                <span class="bottom-nav__label">Playlists</span>
+            </a>
+            <a href="#" class="bottom-nav__item">
+                <span class="bottom-nav__icon">⚙</span>
+                <span class="bottom-nav__label">Settings</span>
+            </a>
+        </div>
+    </nav>
+</body>
+</html>

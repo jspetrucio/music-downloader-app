@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca - App Music</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600,700,800&family=Nunito:wght@400,500,600,700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* === DESIGN TOKENS === */
+        :root {
+            /* Colors */
+            --background: #333333;          /* Grafite escuro - fundo principal */
+            --background-soft: #3A3A3A;     /* Grafite um pouco mais claro */
+            --surface: #F7F3E0;             /* Creme - cartões e áreas de conteúdo */
+            --surface-soft: #E7DFC4;        /* Creme mais escuro */
+            --accent: #D2634B;              /* Laranja queimado - botões principais */
+            --accent-soft: #E58B65;         /* Laranja mais claro */
+            --text-primary: #F7F3E0;        /* Texto claro sobre fundo escuro */
+            --text-secondary: #D0C9AF;      /* Texto secundário claro */
+            --text-dark: #2F2B26;           /* Texto escuro sobre fundo claro */
+            --border-soft: #D8D0B5;         /* Bordas suaves */
+            
+            /* Typography */
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Nunito', sans-serif;
+            
+            /* Spacing & Radius */
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --radius-pill: 24px;
+            --space-xs: 8px;
+            --space-sm: 12px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+        }
+        
+        /* === BASE STYLES === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            background-color: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: var(--space-lg);
+            line-height: 1.6;
+        }
+        
+        /* === HEADER === */
+        .header {
+            margin-bottom: var(--space-lg);
+        }
+        
+        .page-title {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            margin-bottom: var(--space-md);
+        }
+        
+        /* === SEARCH BAR === */
+        .search-bar {
+            background-color: var(--background-soft);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-pill);
+            padding: var(--space-sm) var(--space-lg);
+            margin-bottom: var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .search-icon {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        .search-input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            outline: none;
+        }
+        
+        .search-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+        
+        /* === FILTER PILLS === */
+        .filter-bar {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-xl);
+            overflow-x: auto;
+            padding-bottom: var(--space-xs);
+        }
+        
+        .filter-bar::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .filter-bar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .filter-bar::-webkit-scrollbar-thumb {
+            background: var(--text-secondary);
+            border-radius: 2px;
+        }
+        
+        .filter-pill {
+            background-color: transparent;
+            border: 1px solid var(--border-soft);
+            color: var(--text-secondary);
+            border-radius: var(--radius-pill);
+            padding: var(--space-xs) var(--space-lg);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        
+        .filter-pill:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+        
+        .filter-pill.active {
+            background-color: var(--surface);
+            border-color: var(--surface);
+            color: var(--text-dark);
+        }
+        
+        /* === SONG LIST === */
+        .song-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        
+        /* === SONG CARD === */
+        .song-card {
+            background-color: var(--background-soft);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .song-card:hover {
+            background-color: #404040;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .song-cover {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .song-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .song-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .song-title {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .song-artist {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .song-meta {
+            display: flex;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .song-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .play-count {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .play-icon {
+            color: var(--accent);
+            font-size: 1rem;
+        }
+        
+        .play-number {
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        .song-menu {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: var(--space-xs);
+            transition: color 0.2s;
+        }
+        
+        .song-menu:hover {
+            color: var(--text-primary);
+        }
+        
+        /* === TOOLBAR === */
+        .toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: var(--space-md);
+        }
+        
+        .sort-btn {
+            background-color: var(--background-soft);
+            border: 1px solid var(--border-soft);
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            padding: var(--space-xs) var(--space-md);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            transition: all 0.2s;
+        }
+        
+        .sort-btn:hover {
+            background-color: var(--surface);
+            color: var(--text-dark);
+            border-color: var(--surface);
+        }
+        
+        /* === RESPONSIVE === */
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            body {
+                padding: var(--space-md);
+            }
+            
+            .song-meta {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <h1 class="page-title">Biblioteca</h1>
+        
+        <!-- SEARCH BAR -->
+        <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input 
+                type="text" 
+                class="search-input" 
+                placeholder="Buscar músicas"
+            />
+        </div>
+    </header>
+    
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <button class="sort-btn">
+            <span>↕️</span>
+            <span>Ordenar</span>
+        </button>
+    </div>
+    
+    <!-- FILTER PILLS -->
+    <div class="filter-bar">
+        <button class="filter-pill active">Songs</button>
+        <button class="filter-pill">Playlists</button>
+        <button class="filter-pill">Artists</button>
+        <button class="filter-pill">Albums</button>
+    </div>
+    
+    <!-- SONG LIST -->
+    <div class="song-list">
+        <!-- Song Card 1 -->
+        <div class="song-card">
+            <div class="song-cover">
+                <img src="https://via.placeholder.com/60/D2634B/FFFFFF?text=♪" alt="Cover">
+            </div>
+            <div class="song-info">
+                <div class="song-title">Blinding Lights</div>
+                <div class="song-artist">The Weeknd</div>
+                <div class="song-meta">
+                    <span class="meta-item">⏱ 3:22</span>
+                    <span class="meta-item">📄 3.2 MB</span>
+                    <span class="meta-item">🎵 M4A</span>
+                </div>
+            </div>
+            <div class="song-actions">
+                <div class="play-count">
+                    <span class="play-icon">▶</span>
+                    <span class="play-number">12</span>
+                </div>
+                <button class="song-menu">⋮</button>
+            </div>
+        </div>
+        
+        <!-- Song Card 2 -->
+        <div class="song-card">
+            <div class="song-cover">
+                <img src="https://via.placeholder.com/60/E58B65/FFFFFF?text=♪" alt="Cover">
+            </div>
+            <div class="song-info">
+                <div class="song-title">Levitating</div>
+                <div class="song-artist">Dua Lipa</div>
+                <div class="song-meta">
+                    <span class="meta-item">⏱ 3:23</span>
+                    <span class="meta-item">📄 3.1 MB</span>
+                    <span class="meta-item">🎵 MP3</span>
+                </div>
+            </div>
+            <div class="song-actions">
+                <div class="play-count">
+                    <span class="play-icon">▶</span>
+                    <span class="play-number">8</span>
+                </div>
+                <button class="song-menu">⋮</button>
+            </div>
+        </div>
+        
+        <!-- Song Card 3 -->
+        <div class="song-card">
+            <div class="song-cover">
+                <img src="https://via.placeholder.com/60/D2634B/FFFFFF?text=♪" alt="Cover">
+            </div>
+            <div class="song-info">
+                <div class="song-title">Save Your Tears</div>
+                <div class="song-artist">The Weeknd</div>
+                <div class="song-meta">
+                    <span class="meta-item">⏱ 3:35</span>
+                    <span class="meta-item">📄 3.4 MB</span>
+                    <span class="meta-item">🎵 M4A</span>
+                </div>
+            </div>
+            <div class="song-actions">
+                <div class="play-count">
+                    <span class="play-icon">▶</span>
+                    <span class="play-number">15</span>
+                </div>
+                <button class="song-menu">⋮</button>
+            </div>
+        </div>
+        
+        <!-- Song Card 4 -->
+        <div class="song-card">
+            <div class="song-cover">
+                <img src="https://via.placeholder.com/60/E58B65/FFFFFF?text=♪" alt="Cover">
+            </div>
+            <div class="song-info">
+                <div class="song-title">Good 4 U</div>
+                <div class="song-artist">Olivia Rodrigo</div>
+                <div class="song-meta">
+                    <span class="meta-item">⏱ 2:58</span>
+                    <span class="meta-item">📄 2.8 MB</span>
+                    <span class="meta-item">🎵 MP3</span>
+                </div>
+            </div>
+            <div class="song-actions">
+                <div class="play-count">
+                    <span class="play-icon">▶</span>
+                    <span class="play-number">20</span>
+                </div>
+                <button class="song-menu">⋮</button>
+            </div>
+        </div>
+        
+        <!-- Song Card 5 -->
+        <div class="song-card">
+            <div class="song-cover">
+                <img src="https://via.placeholder.com/60/D2634B/FFFFFF?text=♪" alt="Cover">
+            </div>
+            <div class="song-info">
+                <div class="song-title">Peaches</div>
+                <div class="song-artist">Justin Bieber ft. Daniel Caesar</div>
+                <div class="song-meta">
+                    <span class="meta-item">⏱ 3:18</span>
+                    <span class="meta-item">📄 3.0 MB</span>
+                    <span class="meta-item">🎵 M4A</span>
+                </div>
+            </div>
+            <div class="song-actions">
+                <div class="play-count">
+                    <span class="play-icon">▶</span>
+                    <span class="play-number">5</span>
+                </div>
+                <button class="song-menu">⋮</button>
+            </div>
+        </div>
+        
+        <!-- Song Card 6 -->
+        <div class="song-card">
+            <div class="song-cover">
+                <img src="https://via.placeholder.com/60/E58B65/FFFFFF?text=♪" alt="Cover">
+            </div>
+            <div class="song-info">
+                <div class="song-title">As It Was</div>
+                <div class="song-artist">Harry Styles</div>
+                <div class="song-meta">
+                    <span class="meta-item">⏱ 2:47</span>
+                    <span class="meta-item">📄 2.6 MB</span>
+                    <span class="meta-item">🎵 MP3</span>
+                </div>
+            </div>
+            <div class="song-actions">
+                <div class="play-count">
+                    <span class="play-icon">▶</span>
+                    <span class="play-number">18</span>
+                </div>
+                <button class="song-menu">⋮</button>
+            </div>
+        </div>
+        
+        <!-- Song Card 7 -->
+        <div class="song-card">
+            <div class="song-cover">
+                <img src="https://via.placeholder.com/60/D2634B/FFFFFF?text=♪" alt="Cover">
+            </div>
+            <div class="song-info">
+                <div class="song-title">Heat Waves</div>
+                <div class="song-artist">Glass Animals</div>
+                <div class="song-meta">
+                    <span class="meta-item">⏱ 3:58</span>
+                    <span class="meta-item">📄 3.7 MB</span>
+                    <span class="meta-item">🎵 M4A</span>
+                </div>
+            </div>
+            <div class="song-actions">
+                <div class="play-count">
+                    <span class="play-icon">▶</span>
+                    <span class="play-number">25</span>
+                </div>
+                <button class="song-menu">⋮</button>
+            </div>
+        </div>
+        
+        <!-- Song Card 8 -->
+        <div class="song-card">
+            <div class="song-cover">
+                <img src="https://via.placeholder.com/60/E58B65/FFFFFF?text=♪" alt="Cover">
+            </div>
+            <div class="song-info">
+                <div class="song-title">Stay</div>
+                <div class="song-artist">The Kid LAROI & Justin Bieber</div>
+                <div class="song-meta">
+                    <span class="meta-item">⏱ 2:21</span>
+                    <span class="meta-item">📄 2.3 MB</span>
+                    <span class="meta-item">🎵 MP3</span>
+                </div>
+            </div>
+            <div class="song-actions">
+                <div class="play-count">
+                    <span class="play-icon">▶</span>
+                    <span class="play-number">10</span>
+                </div>
+                <button class="song-menu">⋮</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

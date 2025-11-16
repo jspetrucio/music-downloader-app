@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Background Animation - Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #000000;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8E8E93;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* ========================================
+           ANIMAÇÃO DE BACKGROUND - ONDAS SONORAS
+           Múltiplas camadas de ondas sutis
+        ======================================== */
+        .sound-waves-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            opacity: 0.15;
+        }
+
+        /* Canvas para visualização de áudio */
+        #audio-visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.4;
+        }
+
+        /* Ondas CSS puras (backup/adicional) */
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .wave svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .wave-1 {
+            opacity: 0.3;
+            animation: wave-drift 20s ease-in-out infinite;
+        }
+
+        .wave-2 {
+            opacity: 0.2;
+            animation: wave-drift 25s ease-in-out infinite reverse;
+        }
+
+        .wave-3 {
+            opacity: 0.15;
+            animation: wave-drift 30s ease-in-out infinite;
+        }
+
+        @keyframes wave-drift {
+            0%, 100% {
+                transform: translate(-50%, -50%) translateX(0);
+            }
+            50% {
+                transform: translate(-50%, -50%) translateX(-10%);
+            }
+        }
+
+        /* ========================================
+           PARTÍCULAS FLUTUANTES TIPO "NOTAS"
+        ======================================== */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ========================================
+           PULSO DE BATIDA SUTIL
+           Gradiente radial que pulsa como batida
+        ======================================== */
+        .beat-pulse {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+            animation: pulse-beat 3s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes pulse-beat {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.5;
+            }
+        }
+
+        /* ========================================
+           CONTEÚDO DE EXEMPLO
+        ======================================== */
+        .content {
+            position: relative;
+            z-index: 10;
+            padding: 60px 24px 120px;
+            max-width: 428px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 48px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: 300;
+            color: var(--text-primary);
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* Card glassmorphism */
+        .glass-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 64px;
+            font-weight: 300;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Now Playing Card */
+        .now-playing {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .album-art {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #333, #666);
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .album-art::after {
+            content: '♪';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .track-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .track-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-artist {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .play-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1.5px solid var(--glass-border);
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        .play-button::after {
+            content: '▶';
+            color: var(--text-primary);
+            font-size: 12px;
+            margin-left: 2px;
+        }
+
+        /* Controles */
+        .controls {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 16px 24px;
+            border-radius: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .controls label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .controls input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Equalizer Bars */
+        .equalizer {
+            display: flex;
+            gap: 3px;
+            align-items: flex-end;
+            height: 32px;
+            margin-top: 32px;
+        }
+
+        .eq-bar {
+            width: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            animation: eq-bounce 0.8s ease-in-out infinite;
+        }
+
+        .eq-bar:nth-child(1) { animation-delay: 0s; }
+        .eq-bar:nth-child(2) { animation-delay: 0.1s; }
+        .eq-bar:nth-child(3) { animation-delay: 0.2s; }
+        .eq-bar:nth-child(4) { animation-delay: 0.3s; }
+        .eq-bar:nth-child(5) { animation-delay: 0.4s; }
+        .eq-bar:nth-child(6) { animation-delay: 0.2s; }
+        .eq-bar:nth-child(7) { animation-delay: 0.1s; }
+
+        @keyframes eq-bounce {
+            0%, 100% { height: 8px; }
+            50% { height: 28px; }
+        }
+
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+                gap: 12px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pulso de Batida -->
+    <div class="beat-pulse"></div>
+
+    <!-- Container de Ondas Sonoras -->
+    <div class="sound-waves-container">
+        <!-- Canvas para visualização tipo áudio -->
+        <canvas id="audio-visualizer"></canvas>
+    </div>
+
+    <!-- Partículas Flutuantes -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Conteúdo -->
+    <div class="content">
+        <div class="header">
+            <h1>Music</h1>
+            <p>Animated background concept</p>
+        </div>
+
+        <div class="glass-card">
+            <div class="stat-number">147</div>
+            <div class="stat-label">Songs in Library</div>
+
+            <div class="equalizer">
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+            </div>
+        </div>
+
+        <div class="now-playing">
+            <div class="album-art"></div>
+            <div class="track-info">
+                <div class="track-title">Midnight Dreams</div>
+                <div class="track-artist">The Wavelengths</div>
+            </div>
+            <button class="play-button"></button>
+        </div>
+
+        <div class="now-playing">
+            <div class="album-art"></div>
+            <div class="track-info">
+                <div class="track-title">Electric Sunset</div>
+                <div class="track-artist">Neon Pulse</div>
+            </div>
+            <button class="play-button"></button>
+        </div>
+
+        <div class="now-playing">
+            <div class="album-art"></div>
+            <div class="track-info">
+                <div class="track-title">Velvet Horizons</div>
+                <div class="track-artist">Luna & The Stars</div>
+            </div>
+            <button class="play-button"></button>
+        </div>
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+        <label>
+            <input type="checkbox" id="toggle-visualizer" checked>
+            Audio Viz
+        </label>
+        <label>
+            <input type="checkbox" id="toggle-particles" checked>
+            Particles
+        </label>
+        <label>
+            <input type="checkbox" id="toggle-pulse" checked>
+            Pulse
+        </label>
+    </div>
+
+    <script>
+        /* ========================================
+           VISUALIZADOR DE ÁUDIO TIPO ONDAS
+           Simula barras de áudio que dançam
+        ======================================== */
+        const vizCanvas = document.getElementById('audio-visualizer');
+        const vizCtx = vizCanvas.getContext('2d');
+        let visualizerEnabled = true;
+        let vizAnimationId;
+
+        function resizeVizCanvas() {
+            vizCanvas.width = window.innerWidth;
+            vizCanvas.height = window.innerHeight;
+        }
+        resizeVizCanvas();
+        window.addEventListener('resize', resizeVizCanvas);
+
+        // Criar barras de visualização
+        const barCount = 50;
+        const bars = [];
+
+        class AudioBar {
+            constructor(index) {
+                this.index = index;
+                this.x = (vizCanvas.width / barCount) * index;
+                this.width = vizCanvas.width / barCount - 2;
+                this.baseHeight = 20;
+                this.targetHeight = this.baseHeight;
+                this.currentHeight = this.baseHeight;
+                this.speed = 0.1 + Math.random() * 0.1;
+                this.phase = Math.random() * Math.PI * 2;
+                this.frequency = 0.02 + Math.random() * 0.03;
+            }
+
+            update(time) {
+                // Simular movimento de áudio com sine wave
+                this.targetHeight = this.baseHeight + Math.sin(time * this.frequency + this.phase) * 80;
+
+                // Smooth interpolation
+                this.currentHeight += (this.targetHeight - this.currentHeight) * this.speed;
+            }
+
+            draw() {
+                const gradient = vizCtx.createLinearGradient(
+                    this.x,
+                    vizCanvas.height / 2 - this.currentHeight / 2,
+                    this.x,
+                    vizCanvas.height / 2 + this.currentHeight / 2
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.05)');
+                gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.15)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
+
+                vizCtx.fillStyle = gradient;
+                vizCtx.fillRect(
+                    this.x,
+                    vizCanvas.height / 2 - this.currentHeight / 2,
+                    this.width,
+                    this.currentHeight
+                );
+            }
+        }
+
+        // Inicializar barras
+        for (let i = 0; i < barCount; i++) {
+            bars.push(new AudioBar(i));
+        }
+
+        let vizTime = 0;
+        function animateVisualizer() {
+            if (!visualizerEnabled) {
+                vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
+                return;
+            }
+
+            vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
+
+            vizTime += 1;
+
+            bars.forEach(bar => {
+                bar.update(vizTime);
+                bar.draw();
+            });
+
+            vizAnimationId = requestAnimationFrame(animateVisualizer);
+        }
+
+        animateVisualizer();
+
+        /* ========================================
+           PARTÍCULAS FLUTUANTES TIPO NOTAS
+        ======================================== */
+        const particlesCanvas = document.getElementById('particles-canvas');
+        const particlesCtx = particlesCanvas.getContext('2d');
+        let particles = [];
+        let particlesAnimationId;
+        let particlesEnabled = true;
+
+        function resizeParticlesCanvas() {
+            particlesCanvas.width = window.innerWidth;
+            particlesCanvas.height = window.innerHeight;
+        }
+        resizeParticlesCanvas();
+        window.addEventListener('resize', resizeParticlesCanvas);
+
+        class MusicParticle {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * particlesCanvas.height;
+            }
+
+            reset() {
+                this.x = Math.random() * particlesCanvas.width;
+                this.y = -10;
+                this.size = Math.random() * 2 + 1;
+                this.speedY = Math.random() * 0.3 + 0.1;
+                this.speedX = (Math.random() - 0.5) * 0.2;
+                this.opacity = Math.random() * 0.1 + 0.05;
+
+                // Algumas partículas são "notas musicais"
+                this.isNote = Math.random() > 0.9;
+                if (this.isNote) {
+                    this.symbol = ['♪', '♫', '♬'][Math.floor(Math.random() * 3)];
+                    this.size = Math.random() * 8 + 6;
+                    this.opacity = Math.random() * 0.15 + 0.1;
+                }
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+
+                if (this.y > particlesCanvas.height + 20) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                if (this.isNote) {
+                    particlesCtx.font = `${this.size}px Arial`;
+                    particlesCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                    particlesCtx.fillText(this.symbol, this.x, this.y);
+                } else {
+                    particlesCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                    particlesCtx.beginPath();
+                    particlesCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    particlesCtx.fill();
+                }
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(window.innerWidth / 15, 50);
+            for (let i = 0; i < count; i++) {
+                particles.push(new MusicParticle());
+            }
+        }
+
+        function animateParticles() {
+            if (!particlesEnabled) {
+                particlesCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+                return;
+            }
+
+            particlesCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            particlesAnimationId = requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        window.addEventListener('resize', initParticles);
+
+        /* ========================================
+           CONTROLES INTERATIVOS
+        ======================================== */
+        const vizToggle = document.getElementById('toggle-visualizer');
+        const particlesToggle = document.getElementById('toggle-particles');
+        const pulseToggle = document.getElementById('toggle-pulse');
+        const pulseElement = document.querySelector('.beat-pulse');
+
+        vizToggle.addEventListener('change', (e) => {
+            visualizerEnabled = e.target.checked;
+            if (visualizerEnabled) animateVisualizer();
+        });
+
+        particlesToggle.addEventListener('change', (e) => {
+            particlesEnabled = e.target.checked;
+            if (particlesEnabled) animateParticles();
+        });
+
+        pulseToggle.addEventListener('change', (e) => {
+            pulseElement.style.display = e.target.checked ? 'block' : 'none';
+        });
+    </script>
+</body>
+</html>

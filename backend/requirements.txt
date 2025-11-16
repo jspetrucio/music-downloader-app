@@ -7,3 +7,4 @@ python-multipart==0.0.6
 aiofiles==23.2.1
 slowapi==0.1.9
 aiohttp==3.9.1  # For Cobalt API integration
+sqlalchemy==2.0.25  # Database ORM for queue management

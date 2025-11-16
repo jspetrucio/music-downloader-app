@@ -2,7 +2,7 @@
 //  DownloadView.swift
 //  App-music
 //
-//  Music Downloader - Download tab view
+//  Music Downloader - Download tab view with Queue integration
 //
 
 import SwiftUI
@@ -17,8 +17,12 @@ struct DownloadView: View {
         order: .reverse
     ) private var allDownloadedSongs: [DownloadedSong]
     
+    // Query for queue items count
+    @Query private var allQueueItems: [QueueItem]
+    
     @State private var urlInput = ""
     @State private var selectedFormat: AudioFormat = .m4a
+    @State private var selectedPriority: QueuePriority = .normal
     @State private var metadata: MetadataResponse?
     @State private var isLoadingMetadata = false
     @State private var downloadState: DownloadState = .idle
@@ -26,13 +30,21 @@ struct DownloadView: View {
     @State private var showError = false
     @State private var showSuccessAlert = false
     @State private var successTitle = ""
+    @State private var showAddToQueueSuccess = false
+    @State private var showQueueView = false
 
     private let apiService = APIService.shared
     private let downloadService = DownloadService.shared
+    private let queueService = QueueService.shared
     
     // Get the 5 most recent downloads
     private var recentDownloads: [DownloadedSong] {
         Array(allDownloadedSongs.prefix(5))
+    }
+    
+    // Get active queue count
+    private var activeQueueCount: Int {
+        allQueueItems.filter { !$0.isCompleted }.count
     }
 
     var body: some View {
@@ -51,6 +63,11 @@ struct DownloadView: View {
                         // Daily limit indicator
                         dailyLimitBanner
 
+                        // Queue Status Card (show if queue has items)
+                        if activeQueueCount > 0 {
+                            queueStatusCard
+                        }
+
                         // URL Input Section
                         urlInputSection
 
@@ -59,9 +76,9 @@ struct DownloadView: View {
                             metadataCard(metadata)
                         }
 
-                        // Download Button
+                        // Download Buttons
                         if metadata != nil {
-                            downloadButton
+                            downloadButtonsSection
                         }
 
                         // Recently Downloaded Section
@@ -76,19 +93,33 @@ struct DownloadView: View {
                 .navigationTitle("Download")
                 .navigationBarTitleDisplayMode(.large)
                 .toolbarBackground(.hidden, for: .navigationBar)
-                .alert("Erro", isPresented: $showError) {
+                .alert("Error", isPresented: $showError) {
                     Button("OK", role: .cancel) {}
                 } message: {
                     if let errorMessage = errorMessage {
                         Text(errorMessage)
                     }
                 }
-                .alert("Download Concluído", isPresented: $showSuccessAlert) {
+                .alert("Download Completed", isPresented: $showSuccessAlert) {
                     Button("OK", role: .cancel) {
                         resetForm()
                     }
                 } message: {
-                    Text("'\(successTitle)' foi baixada com sucesso e está disponível na sua biblioteca.")
+                    Text("'\(successTitle)' was downloaded successfully and is available in your library.")
+                }
+                .alert("Added to Queue", isPresented: $showAddToQueueSuccess) {
+                    Button("View Queue") {
+                        showQueueView = true
+                        resetForm()
+                    }
+                    Button("OK", role: .cancel) {
+                        resetForm()
+                    }
+                } message: {
+                    Text("'\(metadata?.metadata.title ?? "Item")' has been added to the download queue.")
+                }
+                .sheet(isPresented: $showQueueView) {
+                    QueueView()
                 }
             }
         }
@@ -115,6 +146,51 @@ struct DownloadView: View {
             cornerRadius: DesignTokens.cornerRadiusLarge,
             padding: DesignTokens.spacingLG
         )
+    }
+    
+    private var queueStatusCard: some View {
+        Button {
+            showQueueView = true
+        } label: {
+            HStack(spacing: DesignTokens.spacingMD) {
+                // Queue icon
+                Image(systemName: "tray.full.fill")
+                    .font(.system(size: 32))
+                    .foregroundStyle(DesignTokens.accentPrimary)
+                
+                // Queue info
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Download Queue")
+                        .font(.headline)
+                        .foregroundStyle(DesignTokens.textPrimary)
+                    
+                    Text("\(activeQueueCount) active download\(activeQueueCount == 1 ? "" : "s")")
+                        .font(.subheadline)
+                        .foregroundStyle(DesignTokens.textSecondary)
+                }
+                
+                Spacer()
+                
+                // Badge and arrow
+                HStack(spacing: DesignTokens.spacingSM) {
+                    Text("\(activeQueueCount)")
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .frame(minWidth: 32, minHeight: 32)
+                        .background(DesignTokens.accentPrimary)
+                        .clipShape(Circle())
+                    
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(DesignTokens.textSecondary)
+                }
+            }
+            .padding(DesignTokens.spacingMD)
+            .minimalistCard(
+                cornerRadius: DesignTokens.cornerRadiusLarge,
+                padding: 0
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     private var urlInputSection: some View {
@@ -207,12 +283,12 @@ struct DownloadView: View {
 
             // Title and Artist
             VStack(alignment: .leading, spacing: 4) {
-                Text(metadata.metadata.title ?? "Desconhecido")
+                Text(metadata.metadata.title ?? "Unknown")
                     .font(.title3)
                     .fontWeight(.bold)
                     .foregroundStyle(.white)
 
-                Text(metadata.metadata.artist ?? "Artista Desconhecido")
+                Text(metadata.metadata.artist ?? "Unknown Artist")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -243,14 +319,29 @@ struct DownloadView: View {
 
             // Format Picker
             VStack(alignment: .leading, spacing: 8) {
-                Text("Formato de Áudio")
+                Text("Audio Format")
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundStyle(.white)
 
-                Picker("Formato", selection: $selectedFormat) {
+                Picker("Format", selection: $selectedFormat) {
                     ForEach(AudioFormat.allCases, id: \.self) { format in
                         Text(format.displayName).tag(format)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+            
+            // Priority Picker (for queue)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Queue Priority")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.white)
+
+                Picker("Priority", selection: $selectedPriority) {
+                    ForEach(QueuePriority.allCases, id: \.self) { priority in
+                        Text(priority.displayName).tag(priority)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -262,8 +353,8 @@ struct DownloadView: View {
         )
     }
 
-    private var downloadButton: some View {
-        VStack(spacing: 12) {
+    private var downloadButtonsSection: some View {
+        VStack(spacing: DesignTokens.spacingMD) {
             // Progress bar (shown during download)
             if downloadState.isDownloading {
                 VStack(spacing: 8) {
@@ -285,28 +376,48 @@ struct DownloadView: View {
                 }
                 .padding(.horizontal)
             }
-
-            // Download button
-            Button {
-                Task { await downloadSong() }
-            } label: {
-                HStack(spacing: DesignTokens.spacingXS) {
-                    if downloadState.isDownloading {
-                        ProgressView()
-                            .tint(DesignTokens.textPrimary)
-                    } else {
-                        Image(systemName: "arrow.down.circle.fill")
+            
+            // Two-button layout: Add to Queue | Download Now
+            HStack(spacing: DesignTokens.spacingSM) {
+                // Add to Queue button
+                Button {
+                    Task { await addToQueue() }
+                } label: {
+                    HStack(spacing: DesignTokens.spacingXS) {
+                        Image(systemName: "plus.circle")
+                        Text("Add to Queue")
+                            .fontWeight(.semibold)
                     }
-                    Text(downloadState.downloadButtonText)
-                        .fontWeight(.semibold)
+                    .foregroundStyle(DesignTokens.textPrimary)
+                    .frame(maxWidth: .infinity)
+                    .padding()
                 }
-                .foregroundStyle(DesignTokens.textPrimary)
-                .frame(maxWidth: .infinity)
-                .padding()
+                .outlineButtonStyle()
+                .disabled(downloadState.isDownloading)
+                .opacity(downloadState.isDownloading ? 0.5 : 1.0)
+                
+                // Download Now button
+                Button {
+                    Task { await downloadSong() }
+                } label: {
+                    HStack(spacing: DesignTokens.spacingXS) {
+                        if downloadState.isDownloading {
+                            ProgressView()
+                                .tint(DesignTokens.textPrimary)
+                        } else {
+                            Image(systemName: "arrow.down.circle.fill")
+                        }
+                        Text(downloadState.isDownloading ? "Downloading..." : "Download Now")
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundStyle(DesignTokens.textPrimary)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                }
+                .outlineButtonStyle()
+                .disabled(downloadState.downloadButtonDisabled)
+                .opacity(downloadState.downloadButtonDisabled ? 0.5 : 1.0)
             }
-            .outlineButtonStyle()
-            .disabled(downloadState.downloadButtonDisabled)
-            .opacity(downloadState.downloadButtonDisabled ? 0.5 : 1.0)
         }
     }
     
@@ -370,6 +481,31 @@ struct DownloadView: View {
 
         isLoadingMetadata = false
     }
+    
+    private func addToQueue() async {
+        guard !urlInput.isEmpty else { return }
+        guard metadata != nil else { return }
+
+        do {
+            _ = try await queueService.addToQueue(
+                url: urlInput,
+                format: selectedFormat,
+                priority: selectedPriority,
+                metadata: metadata,
+                modelContext: modelContext
+            )
+            
+            // Show success alert
+            showAddToQueueSuccess = true
+            
+        } catch let error as APIError {
+            errorMessage = error.localizedDescription
+            showError = true
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+        }
+    }
 
     private func downloadSong() async {
         guard !urlInput.isEmpty else { return }
@@ -409,6 +545,7 @@ struct DownloadView: View {
         metadata = nil
         downloadState = .idle
         successTitle = ""
+        selectedPriority = .normal
     }
 
     // MARK: - Helpers
@@ -499,7 +636,7 @@ struct RecentDownloadRow: View {
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
-        for: DownloadedSong.self, DownloadHistory.self,
+        for: DownloadedSong.self, DownloadHistory.self, QueueItem.self,
         configurations: config
     )
     

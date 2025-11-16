@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playlists - App Music Redesign</title>
+    
+    <!-- Google Fonts - Inter (Apple-like) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ========================================
+           DESIGN SYSTEM - APPLE MINIMALIST
+           ======================================== */
+        
+        :root {
+            /* Backgrounds - Pure black with subtle gradients */
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-gradient-start: #000000;
+            --bg-gradient-end: #1a1a1a;
+            
+            /* Glass/Frosted effects */
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-hover: rgba(255, 255, 255, 0.08);
+            --glass-active: rgba(255, 255, 255, 0.12);
+            
+            /* Text hierarchy */
+            --text-primary: #FFFFFF;
+            --text-secondary: #8E8E93;
+            --text-tertiary: #48484A;
+            
+            /* Accent - iOS blue */
+            --accent: #0A84FF;
+            
+            /* Typography */
+            --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            
+            /* Type scale */
+            --text-xs: 12px;
+            --text-sm: 14px;
+            --text-base: 16px;
+            --text-lg: 20px;
+            --text-xl: 28px;
+            --text-2xl: 36px;
+            --text-3xl: 48px;
+            
+            /* Font weights */
+            --weight-light: 300;
+            --weight-regular: 400;
+            --weight-medium: 500;
+            --weight-semibold: 600;
+            --weight-bold: 700;
+            
+            /* Spacing - 8px scale */
+            --space-1: 8px;
+            --space-2: 16px;
+            --space-3: 24px;
+            --space-4: 32px;
+            --space-5: 40px;
+            --space-6: 48px;
+            --space-8: 64px;
+            
+            /* Border radius */
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --radius-full: 9999px;
+            
+            /* Shadows */
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --shadow-medium: 0 12px 48px rgba(0, 0, 0, 0.6);
+        }
+        
+        /* ========================================
+           BASE RESET
+           ======================================== */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+        
+        /* ========================================
+           LAYOUT
+           ======================================== */
+        
+        .container {
+            max-width: 428px;
+            margin: 0 auto;
+            padding: var(--space-6) var(--space-3) calc(var(--space-8) + 60px);
+            min-height: 100vh;
+            /* Subtle gradient background for depth */
+            background: linear-gradient(180deg, 
+                var(--bg-gradient-start) 0%, 
+                var(--bg-gradient-end) 40%,
+                var(--bg-gradient-start) 100%
+            );
+        }
+        
+        /* ========================================
+           HEADER
+           ======================================== */
+        
+        .header {
+            margin-bottom: var(--space-6);
+            text-align: center;
+        }
+        
+        .header__title {
+            font-size: var(--text-3xl);
+            font-weight: var(--weight-light);
+            letter-spacing: -0.02em;
+            margin-bottom: var(--space-6);
+            color: var(--text-primary);
+        }
+        
+        /* ========================================
+           NEW PLAYLIST BUTTON - Prominent CTA
+           ======================================== */
+        
+        .new-playlist-btn {
+            width: 100%;
+            padding: var(--space-4);
+            background: transparent;
+            border: 1.5px solid var(--text-primary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            font-weight: var(--weight-semibold);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-8);
+            letter-spacing: 0.01em;
+        }
+        
+        .new-playlist-btn__icon {
+            font-size: 24px;
+            font-weight: var(--weight-light);
+        }
+        
+        .new-playlist-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);
+        }
+        
+        .new-playlist-btn:active {
+            transform: translateY(0);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        /* ========================================
+           PLAYLIST GRID - Card Layout
+           ======================================== */
+        
+        .playlists-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-4);
+        }
+        
+        /* Playlist Card - Square with glassmorphism */
+        .playlist-card {
+            aspect-ratio: 1 / 1;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .playlist-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .playlist-card:active {
+            transform: translateY(-2px);
+        }
+        
+        /* Card Background - Gradient placeholders */
+        .playlist-card__background {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            z-index: 0;
+        }
+        
+        .playlist-card--gradient-1 .playlist-card__background {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        
+        .playlist-card--gradient-2 .playlist-card__background {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+        
+        .playlist-card--gradient-3 .playlist-card__background {
+            background: linear-gradient(135deg, #18181b 0%, #27272a 100%);
+        }
+        
+        .playlist-card--gradient-4 .playlist-card__background {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1f1f1f 100%);
+        }
+        
+        .playlist-card--gradient-5 .playlist-card__background {
+            background: linear-gradient(135deg, #171717 0%, #262626 100%);
+        }
+        
+        .playlist-card--gradient-6 .playlist-card__background {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1c1c1c 100%);
+        }
+        
+        /* Glass overlay on hover */
+        .playlist-card__overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+        
+        .playlist-card:hover .playlist-card__overlay {
+            opacity: 1;
+        }
+        
+        /* Card Content - Info overlay at bottom */
+        .playlist-card__content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-3);
+            background: linear-gradient(to top, 
+                rgba(0, 0, 0, 0.8) 0%, 
+                rgba(0, 0, 0, 0.4) 50%,
+                transparent 100%
+            );
+            z-index: 2;
+        }
+        
+        .playlist-card__title {
+            font-size: var(--text-base);
+            font-weight: var(--weight-semibold);
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .playlist-card__count {
+            font-size: var(--text-xs);
+            font-weight: var(--weight-medium);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Music icon in center (placeholder) */
+        .playlist-card__icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 56px;
+            opacity: 0.15;
+            z-index: 1;
+        }
+        
+        /* ========================================
+           BOTTOM NAV
+           ======================================== */
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 428px;
+            width: 100%;
+            padding: var(--space-2) var(--space-3) calc(var(--space-2) + env(safe-area-inset-bottom));
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .bottom-nav__items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .bottom-nav__item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: var(--space-1);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .bottom-nav__item--active {
+            color: var(--text-primary);
+        }
+        
+        .bottom-nav__icon {
+            font-size: 24px;
+            font-weight: var(--weight-light);
+        }
+        
+        .bottom-nav__label {
+            font-size: 10px;
+            font-weight: var(--weight-medium);
+            letter-spacing: 0.02em;
+        }
+        
+        /* ========================================
+           ANIMATIONS
+           ======================================== */
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .header {
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        .new-playlist-btn {
+            animation: fadeInUp 0.6s ease 0.1s backwards;
+        }
+        
+        .playlist-card:nth-child(1) {
+            animation: fadeInScale 0.6s ease 0.15s backwards;
+        }
+        
+        .playlist-card:nth-child(2) {
+            animation: fadeInScale 0.6s ease 0.2s backwards;
+        }
+        
+        .playlist-card:nth-child(3) {
+            animation: fadeInScale 0.6s ease 0.25s backwards;
+        }
+        
+        .playlist-card:nth-child(4) {
+            animation: fadeInScale 0.6s ease 0.3s backwards;
+        }
+        
+        .playlist-card:nth-child(5) {
+            animation: fadeInScale 0.6s ease 0.35s backwards;
+        }
+        
+        .playlist-card:nth-child(6) {
+            animation: fadeInScale 0.6s ease 0.4s backwards;
+        }
+        
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+        
+        @media (max-width: 375px) {
+            .header__title {
+                font-size: var(--text-2xl);
+            }
+            
+            .playlists-grid {
+                gap: var(--space-3);
+            }
+            
+            .playlist-card__title {
+                font-size: var(--text-sm);
+            }
+        }
+        
+        @media (min-width: 480px) {
+            .playlists-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header__title">Playlists</h1>
+        </header>
+        
+        <!-- New Playlist Button - Outline style CTA -->
+        <button class="new-playlist-btn" aria-label="Create new playlist">
+            <span class="new-playlist-btn__icon">+</span>
+            <span>New Playlist</span>
+        </button>
+        
+        <!-- Playlists Grid -->
+        <div class="playlists-grid">
+            <!-- Playlist Card 1 - Favorites -->
+            <div class="playlist-card playlist-card--gradient-1">
+                <div class="playlist-card__background"></div>
+                <div class="playlist-card__icon">♪</div>
+                <div class="playlist-card__overlay">▶</div>
+                <div class="playlist-card__content">
+                    <div class="playlist-card__title">Favorites</div>
+                    <div class="playlist-card__count">24 songs</div>
+                </div>
+            </div>
+            
+            <!-- Playlist Card 2 - Workout -->
+            <div class="playlist-card playlist-card--gradient-2">
+                <div class="playlist-card__background"></div>
+                <div class="playlist-card__icon">♪</div>
+                <div class="playlist-card__overlay">▶</div>
+                <div class="playlist-card__content">
+                    <div class="playlist-card__title">Workout</div>
+                    <div class="playlist-card__count">18 songs</div>
+                </div>
+            </div>
+            
+            <!-- Playlist Card 3 - Chill Vibes -->
+            <div class="playlist-card playlist-card--gradient-3">
+                <div class="playlist-card__background"></div>
+                <div class="playlist-card__icon">♪</div>
+                <div class="playlist-card__overlay">▶</div>
+                <div class="playlist-card__content">
+                    <div class="playlist-card__title">Chill Vibes</div>
+                    <div class="playlist-card__count">32 songs</div>
+                </div>
+            </div>
+            
+            <!-- Playlist Card 4 - Road Trip -->
+            <div class="playlist-card playlist-card--gradient-4">
+                <div class="playlist-card__background"></div>
+                <div class="playlist-card__icon">♪</div>
+                <div class="playlist-card__overlay">▶</div>
+                <div class="playlist-card__content">
+                    <div class="playlist-card__title">Road Trip</div>
+                    <div class="playlist-card__count">41 songs</div>
+                </div>
+            </div>
+            
+            <!-- Playlist Card 5 - Focus -->
+            <div class="playlist-card playlist-card--gradient-5">
+                <div class="playlist-card__background"></div>
+                <div class="playlist-card__icon">♪</div>
+                <div class="playlist-card__overlay">▶</div>
+                <div class="playlist-card__content">
+                    <div class="playlist-card__title">Focus</div>
+                    <div class="playlist-card__count">15 songs</div>
+                </div>
+            </div>
+            
+            <!-- Playlist Card 6 - Party -->
+            <div class="playlist-card playlist-card--gradient-6">
+                <div class="playlist-card__background"></div>
+                <div class="playlist-card__icon">♪</div>
+                <div class="playlist-card__overlay">▶</div>
+                <div class="playlist-card__content">
+                    <div class="playlist-card__title">Party</div>
+                    <div class="playlist-card__count">28 songs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav__items">
+            <a href="#" class="bottom-nav__item">
+                <span class="bottom-nav__icon">↓</span>
+                <span class="bottom-nav__label">Download</span>
+            </a>
+            <a href="#" class="bottom-nav__item">
+                <span class="bottom-nav__icon">♪</span>
+                <span class="bottom-nav__label">Library</span>
+            </a>
+            <a href="#" class="bottom-nav__item bottom-nav__item--active">
+                <span class="bottom-nav__icon">☰</span>
+                <span class="bottom-nav__label">Playlists</span>
+            </a>
+            <a href="#" class="bottom-nav__item">
+                <span class="bottom-nav__icon">⚙</span>
+                <span class="bottom-nav__label">Settings</span>
+            </a>
+        </div>
+    </nav>
+</body>
+</html>

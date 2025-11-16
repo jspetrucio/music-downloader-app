@@ -11,7 +11,9 @@ from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.core.errors import MusicDownloaderException
+from app.core.database import init_database
 from app.models.schemas import ErrorResponse
+from app.services.queue_processor import start_queue_processor, stop_queue_processor
 
 # Configure logging
 logging.basicConfig(
@@ -30,7 +32,32 @@ async def lifespan(app: FastAPI):
     logger.info("🚀 Music Downloader API starting...")
     logger.info(f"Environment: {'Development' if settings.DEBUG else 'Production'}")
     logger.info(f"Temp directory: {settings.TEMP_DIR}")
+    
+    # Initialize database
+    try:
+        init_database()
+        logger.info("✅ Database initialized")
+    except Exception as e:
+        logger.error(f"❌ Database initialization failed: {e}")
+        raise
+    
+    # Start queue processor
+    try:
+        await start_queue_processor()
+        logger.info("✅ Queue processor started")
+    except Exception as e:
+        logger.error(f"❌ Queue processor start failed: {e}")
+        raise
+    
     yield
+    
+    # Shutdown: Stop queue processor
+    try:
+        await stop_queue_processor()
+        logger.info("✅ Queue processor stopped")
+    except Exception as e:
+        logger.error(f"❌ Queue processor stop failed: {e}")
+    
     logger.info("👋 Music Downloader API shutting down...")
 
 
@@ -38,7 +65,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Music Downloader API",
     description="Backend API for downloading and converting YouTube videos to audio",
-    version="1.0.0",
+    version="2.0.0",
     docs_url="/docs" if settings.DEBUG else None,  # Disable docs in production
     redoc_url="/redoc" if settings.DEBUG else None,
     lifespan=lifespan
@@ -92,11 +119,12 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 
 # Import and register routes
-from app.api.routes import metadata, download, health
+from app.api.routes import metadata, download, health, queue
 
 app.include_router(health.router, tags=["Health"])
 app.include_router(metadata.router, prefix="/api/v1", tags=["Metadata"])
 app.include_router(download.router, prefix="/api/v1", tags=["Download"])
+app.include_router(queue.router, prefix="/api/v1", tags=["Queue"])
 
 
 @app.get("/")
@@ -104,8 +132,14 @@ async def root():
     """Root endpoint"""
     return {
         "service": "Music Downloader API",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "status": "running",
+        "features": {
+            "direct_download": True,
+            "queue_system": True,
+            "concurrent_downloads": 3,
+            "auto_retry": True
+        },
         "docs": "/docs" if settings.DEBUG else "disabled"
     }
 

@@ -17,7 +17,8 @@ struct App_musicApp: App {
         .modelContainer(for: [
             DownloadedSong.self,
             Playlist.self,
-            DownloadHistory.self
+            DownloadHistory.self,
+            QueueItem.self  // Added QueueItem to model container
         ])
     }
 }
